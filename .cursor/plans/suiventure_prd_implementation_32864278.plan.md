@@ -112,7 +112,7 @@ When run ends (win): drop from same catalog (roll slot + set_id + rarity for gea
 
 ### 2.4 gacha_gear & gacha_pet (two separate gachas)
 
-- **GachaGear** (shared object): holds SUI from pulls, price (e.g. 0.1 SUI), ref to nft_collection. `pull_gear(coin, ctx)`: take SUI, use `sui::random` to pick slot (Helmet/Weapon/Shield/Boots) and rarity (weighted: Normal > Rare > Epic > Legend > Mystic), mint EquipmentNFT from catalog, transfer to sender, deposit SUI.
+- **GachaGear** (shared object): holds SUI from pulls, price (e.g. 0.01 SUI), ref to nft_collection. `pull_gear(coin, ctx)`: take SUI, use `sui::random` to pick slot (Helmet/Weapon/Shield/Boots) and rarity (weighted: Normal > Rare > Epic > Legend > Mystic), mint EquipmentNFT from catalog, transfer to sender, deposit SUI.
 - **GachaPet** (shared object): same idea. `pull_pet(coin, ctx)`: pick pet_id and rarity (weighted), mint PetNFT from catalog, transfer to sender, deposit SUI.
 - **Events**: Emit (sender, minted_object_id, type_gear_or_pet, rarity, slot_or_pet_id) for indexers/frontend.
 
@@ -147,7 +147,7 @@ All run_logic entry functions take `&mut Run` (or Run by value and return it), p
 
 ### 2.8 Constants and Errors
 
-- Centralize constants: board_tile_count (30–40), floor_count (15), base potion carry (3), base potion heal (30), shop intervals (3), boss interval (5); **gacha_gear** price and **gacha_pet** price (e.g. each 0.1 SUI); **5 rarity weights** (Normal > Rare > Epic > Legend > Mystic).
+- Centralize constants: board_tile_count (30–40), floor_count (15), base potion carry (3), base potion heal (30), shop intervals (3), boss interval (5); **gacha_gear** price and **gacha_pet** price (e.g. each 0.01 SUI); **5 rarity weights** (Normal > Rare > Epic > Legend > Mystic).
 - Use distinct abort codes per module (e.g. game_state: ENotPlayer, ENoRun; gacha_gear / gacha_pet: EInsufficientPayment, EMintFailed; run_logic: EInvalidFloor, ENoPotion). Document in BETTER_ERROR_HANDLING style.
 
 ### 2.9 Tests

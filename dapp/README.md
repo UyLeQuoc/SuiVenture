@@ -1,39 +1,33 @@
-# dApp
+# SuiVenture dApp
 
-The frontend application for Sui Venture.
-It is bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Next.js frontend for SuiVenture. Bottom nav: **Gacha** | **Inventory** | **Battle** | **Pet**.
 
 ## Quickstart
 
-### Prepare the environment variables
-1. Run `vercel link` in the root directory of the project (not inside the dapp/ directory) and link to the existing project
-2. Run the following commands to prepare your .env files:
+### Env vars
 
-- To pull the preview environment's configuration locally:
-  ```
-  vercel env pull --environment=preview dapp/.env.preview
-  ```
-- If for any reason you need the production env's configuration locally (needs attention, do not try this at home)
-  ```
-  vercel env pull --environment=production dapp/.env.production
-  ```
-- Attention: If you have any other `.env` files locally, they will override the above ones causing unexpected behaviour in case they match the [naming conventions of NextJS](https://nextjs.org/docs/app/guides/environment-variables#environment-variable-load-order)
+Copy `.env.example` to `.env` or `.env.local`. Required for wallet/network:
 
-3. Install the dependencies with: `bun install`
+- `NEXT_PUBLIC_SUI_NETWORK` (e.g. `testnet`)
+- `NEXT_PUBLIC_SUI_FULLNODE_URL`
+- `NEXT_PUBLIC_ENOKI_PUBLIC_KEY`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID` (optional, for Enoki sign-in)
 
+After deploying the Move package (see repo root README), set in `.env.local`:
 
-### Run the local development server
+- `NEXT_PUBLIC_PACKAGE_ID` – from publish output
+- `NEXT_PUBLIC_NFT_MINT_AUTHORITY_ID` – from publish output (created in `nft_collection::init`)
+- `NEXT_PUBLIC_GACHA_GEAR_ID`, `NEXT_PUBLIC_GACHA_PET_ID` – from publish output (**Created Objects**); `gacha_gear::init` and `gacha_pet::init` create one shared GachaGear and one shared GachaPet on publish
+- `NEXT_PUBLIC_RANDOM_ID` – Sui system Random object ID for the network (required for gacha and battle). On testnet/devnet get it from chain config or a “get random object” query
+- `NEXT_PUBLIC_TRANSFER_POLICY_GEAR_ID`, `NEXT_PUBLIC_TRANSFER_POLICY_PET_ID` – **not** from publish. After publish, call **once** `marketplace::create_marketplace_policies(publisher)` with your **Publisher** (from publish); use the **Created Objects** (the two shared TransferPolicy IDs) from that tx. The two TransferPolicyCap objects go to your wallet (admin)
 
-- Using preview's configuration:
-  ```
-  bun run dev:preview
-  ```
-- Using production's (attention):
-  ```
-  bun run dev:production
-  ```
+### Install and run
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+pnpm install
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). Default route is `/gacha`.
 
 ## UI Theming
 

@@ -1,13 +1,8 @@
 /**
  * Data Layer
- *
- * This directory contains data access utilities for:
- * - Blockchain interactions (Sui)
- * - API calls
- * - State management helpers
+ * Blockchain interactions (Sui), hooks for Player, Run, NFTs.
  */
 
-// Export data access utilities here as they are created
-// Example:
-// export { useSuiVenture } from './suiVenture';
-// export { useTransaction } from './transaction';
+export { usePlayer } from "./hooks/use-player";
+export { useRun } from "./hooks/use-run";
+export { useOwnedNFTs } from "./hooks/use-owned-nfts";

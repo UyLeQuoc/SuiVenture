@@ -69,7 +69,7 @@ Rarity: Common / Rare / Epic.
 Extra: Skin ID (visual overlay on character).
 
 Permanent Pet NFT (1 slot): Bonus stats (e.g., +10% ATK, +HP regen).
-Gacha: Pay fixed SUI (e.g., 0.1 SUI per pull) → random rarity/type (equipment 70%, pet 30%) → mint NFT.
+Gacha: Pay fixed SUI (e.g., 0.01 SUI per pull) → random rarity/type (equipment 70%, pet 30%) → mint NFT.
 
 4.3 In-Run Temporary Items & Potion System
 
