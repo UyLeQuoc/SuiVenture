@@ -1,0 +1,33 @@
+{
+  "name": "sui-venture",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["dapp", "ts-utils"],
+  "scripts": {
+    "dev": "bun run --filter '@sui-venture/dapp' dev",
+    "install:verbose": "bun install --verbose",
+    "test": "bun run --filter '*' test",
+    "coverage": "bun run --filter '*' coverage",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "format": "biome format --write",
+    "clean": "rm -rf ./node_modules && bun run --filter '*' clean",
+    "start_localnet": "RUST_LOG=off sui start --with-faucet --force-regenesis",
+    "faucet": "sui client faucet",
+    "deploy_localnet": "bun run --filter '@sui-venture/ts-utils' deploy_localnet",
+    "deploy_devnet": "bun run --filter '@sui-venture/ts-utils' deploy_devnet",
+    "deploy_testnet": "bun run --filter '@sui-venture/ts-utils' deploy_testnet",
+    "deploy_mainnet": "bun run --filter '@sui-venture/ts-utils' deploy_mainnet",
+    "codegen": "bun run --filter '@sui-venture/ts-utils' codegen",
+    "codegen:mainnet": "bun run --filter '@sui-venture/ts-utils' codegen:mainnet",
+    "codegen:testnet": "bun run --filter '@sui-venture/ts-utils' codegen:testnet",
+    "move:build": "sui move build --path ./move",
+    "move:test": "sui move test --path ./move"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "Sui Venture",
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.13"
+  }
+}

@@ -1,0 +1,15 @@
+*.tar.gz
+node_modules
+/references
+dist
+.env
+.env.*
+!.env.example
+
+# Package manager
+pnpm-lock.yaml
+bun.lockb
+
+# Generated code
+ts-utils/src/generated
+move/package_summaries
