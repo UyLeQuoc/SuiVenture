@@ -1,7 +1,6 @@
 # dApp
 
-The frontend application for Sui Venture
-This is the Next.js scaffold of the `dapp-template` built by SolEng.
+The frontend application for Sui Venture.
 It is bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Quickstart
