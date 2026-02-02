@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dice1, Package, Swords, Cat } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { href: "/gacha", label: "Gacha", icon: Dice1 },
-  { href: "/inventory", label: "Inventory", icon: Package },
-  { href: "/battle", label: "Battle", icon: Swords },
-  { href: "/pet", label: "Pet", icon: Cat },
+  { href: "/shop", label: "Shop", src: "/shop.png" },
+  { href: "/inventory", label: "Inventory", src: "/gear.png" },
+  { href: "/battle", label: "Battle", src: "/battle.png" },
+  { href: "/pet", label: "Pet", src: "/pet.png" },
 ] as const;
 
 export function BottomNav() {
@@ -17,11 +16,11 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+      className="shrink-0 border-t bg-[#3A374A] pb-[max(0.5rem,env(safe-area-inset-bottom))] border-t-2 border-t-[#6D678F]"
       aria-label="Main navigation"
     >
-      <div className="flex h-14 items-center justify-around">
-        {TABS.map(({ href, label, icon: Icon }) => {
+      <div className="flex h-14 items-center justify-around py-8 pt-10">
+        {TABS.map(({ href, label, src }) => {
           const isActive = pathname === href;
           return (
             <Link
@@ -30,14 +29,25 @@ export function BottomNav() {
               className={cn(
                 "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-xs transition-colors",
                 "touch-manipulation active:bg-muted",
+                "focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#3A374A]",
                 isActive
-                  ? "text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-white font-medium"
+                  : "text-muted-foreground hover:text-white/80"
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon className="size-5 shrink-0" aria-hidden />
-              <span>{label}</span>
+              <img
+                src={src}
+                alt=""
+                width={40}
+                height={40}
+                className={cn(
+                  "shrink-0 object-contain",
+                  !isActive && "opacity-40"
+                )}
+                aria-hidden
+              />
+              <span className="font-pixelify text-lg">{label}</span>
             </Link>
           );
         })}

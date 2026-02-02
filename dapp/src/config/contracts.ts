@@ -18,6 +18,9 @@ export const TRANSFER_POLICY_GEAR_ID =
   process.env.NEXT_PUBLIC_TRANSFER_POLICY_GEAR_ID ?? "0x0";
 export const TRANSFER_POLICY_PET_ID =
   process.env.NEXT_PUBLIC_TRANSFER_POLICY_PET_ID ?? "0x0";
+/** Admin wallet address; if set, only this wallet can use Admin page withdraw. */
+export const ADMIN_ADDRESS =
+  process.env.NEXT_PUBLIC_ADMIN_ADDRESS ?? "";
 
 /** 0.01 SUI in MIST (gacha price). */
 export const GACHA_PRICE_MIST = BigInt(100_000_000);
@@ -115,4 +118,14 @@ export function equipmentNFTType(packageId: string) {
 }
 export function petNFTType(packageId: string) {
   return `${packageId}::${MODULE_NFT_COLLECTION}::PetNFT`;
+}
+
+/** TransferPolicyCap<EquipmentNFT> – admin holds this to withdraw from Gear policy. (Framework 0x2) */
+export function transferPolicyCapGearType(packageId: string) {
+  return `0x2::transfer_policy::TransferPolicyCap<${packageId}::${MODULE_NFT_COLLECTION}::EquipmentNFT>`;
+}
+
+/** TransferPolicyCap<PetNFT> – admin holds this to withdraw from Pet policy. (Framework 0x2) */
+export function transferPolicyCapPetType(packageId: string) {
+  return `0x2::transfer_policy::TransferPolicyCap<${packageId}::${MODULE_NFT_COLLECTION}::PetNFT>`;
 }

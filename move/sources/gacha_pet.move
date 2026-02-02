@@ -1,9 +1,8 @@
 /// Gacha for pets only. Pay SUI, get random PetNFT (pet_id, rarity weighted).
+/// Payment is sent directly to admin address (no shared GachaPet object).
 module sui_venture_project::gacha_pet;
 
-use sui::balance::{Self, Balance};
 use sui::coin::{Self, Coin};
-use sui::object;
 use sui::random::{Self, Random, RandomGenerator};
 use sui::sui::SUI;
 use sui::transfer;
@@ -17,6 +16,9 @@ use sui_venture_project::nft_collection::{Self, NftMintAuthority};
 
 /// Price per pull in MIST (e.g. 0.01 SUI = 10_000_000 MIST).
 const PRICE_MIST: u64 = 10_000_000;
+
+/// Admin wallet: receives all gacha payments.
+const ADMIN: address = @admin;
 
 // Rarity: Normal 0, Rare 1, Epic 2, Legend 3, Mystic 4
 const RARITY_NORMAL: u8 = 0;
@@ -39,22 +41,6 @@ const BONUS_CRIT: u8 = 4;
 // ---------------------------------------------------------------------------
 
 const EInsufficientPayment: u64 = 1;
-
-// ---------------------------------------------------------------------------
-// One-time witness for init (creates GachaPet on publish)
-// ---------------------------------------------------------------------------
-
-public struct GACHA_PET has drop {}
-
-// ---------------------------------------------------------------------------
-// GachaPet (shared): price, treasury balance
-// ---------------------------------------------------------------------------
-
-public struct GachaPet has key {
-    id: object::UID,
-    price: u64,
-    balance: Balance<SUI>,
-}
 
 // ---------------------------------------------------------------------------
 // Weighted rarity: same as gacha_gear
@@ -84,43 +70,19 @@ fun bonus_value_for_rarity(base: u64, rarity: u8): u64 {
 }
 
 // ---------------------------------------------------------------------------
-// Init: create shared GachaPet on package publish (price = PRICE_MIST)
+// Pull pet: pay PRICE_MIST (to admin), get random PetNFT
 // ---------------------------------------------------------------------------
 
-fun init(otw: GACHA_PET, ctx: &mut TxContext) {
-    let gacha = GachaPet {
-        id: object::new(ctx),
-        price: PRICE_MIST,
-        balance: balance::zero<SUI>(),
-    };
-    transfer::share_object(gacha);
-}
-
-// ---------------------------------------------------------------------------
-// Pull pet: pay price, get random PetNFT
-// ---------------------------------------------------------------------------
-
-/// Create shared GachaPet manually (optional; init already creates one on publish). Price in MIST.
-public entry fun create_gacha_pet(price: u64, ctx: &mut TxContext) {
-    let gacha = GachaPet {
-        id: object::new(ctx),
-        price,
-        balance: balance::zero<SUI>(),
-    };
-    transfer::share_object(gacha);
-}
-
-/// Pay price, receive random PetNFT. Refund excess coin to sender.
+/// Pay price (to admin wallet), receive random PetNFT. Refund excess coin to sender.
 public entry fun pull_pet(
-    gacha: &mut GachaPet,
     authority: &mut NftMintAuthority,
     mut coin: Coin<SUI>,
     r: &Random,
     ctx: &mut TxContext,
 ) {
-    assert!(coin::value(&coin) >= gacha.price, EInsufficientPayment);
-    let pay = coin::split(&mut coin, gacha.price, ctx);
-    balance::join(&mut gacha.balance, coin::into_balance(pay));
+    assert!(coin::value(&coin) >= PRICE_MIST, EInsufficientPayment);
+    let pay = coin::split(&mut coin, PRICE_MIST, ctx);
+    transfer::public_transfer(pay, ADMIN);
     if (coin::value(&coin) > 0) {
         transfer::public_transfer(coin, ctx.sender());
     } else {

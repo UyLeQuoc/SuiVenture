@@ -1,6 +1,6 @@
 ---
 name: SuiVenture PRD Implementation
-overview: "Implement the SuiVenture MVP: Move 2024 contracts (Player/Run, separate Gacha Gear + Gacha Pet, 5 rarities, run logic with end-game drops) and Next.js dApp with bottom nav (Gacha, Inventory, Battle, Pet)."
+overview: "Implement the SuiVenture MVP: Move 2024 contracts (Player/Run, separate Gacha Gear + Gacha Pet, 5 rarities, run logic with end-game drops, Upgrade 3→1 rarity, Marketplace via Sui Kiosk + 5% admin fee) and Next.js dApp with bottom nav (Gacha, Inventory, Battle, Pet); Inventory handles Upgrade and Marketplace (list/buy)."
 todos: []
 isProject: false
 ---
@@ -28,6 +28,8 @@ flowchart TB
     gacha_gear[gacha_gear: SUI pull gear]
     gacha_pet[gacha_pet: SUI pull pet]
     run_logic[run_logic: roll, events, combat, drops]
+    upgrade[upgrade: 3 same → 1 next rarity]
+    marketplace[marketplace: Kiosk + 5% fee]
     randomness[sui::random: dice, hit, drops]
   end
 
@@ -37,6 +39,8 @@ flowchart TB
   run_logic --> game_state
   run_logic --> nft_collection
   run_logic --> randomness
+  upgrade --> nft_collection
+  marketplace --> nft_collection
   frontend --> move
 ```
 
@@ -44,6 +48,8 @@ flowchart TB
 
 - **Data**: Player (persistent), Run (per-session), Equipment/Pet NFTs (persistent). Run holds temp equipment, potions, blue gems, floor, roll count.
 - **Flow**: Connect wallet → Gacha Gear / Gacha Pet (separate) → Equip (Inventory/Pet) → Battle (Start Run → Roll → Event → Win/die). When run ends (win), drops: temp/permanent items and pet chances per catalog below.
+- **Upgrade**: In Inventory, merge 3 identical items (same slot+set_id+rarity for gear, same pet_id+rarity for pets) into 1 item of the next rarity (Move: `upgrade`; dApp: select 3 → upgrade_gear/upgrade_pet).
+- **Marketplace**: In Inventory, list NFTs for sale (user Kiosk: place + list) and buy listed NFTs (Kiosk purchase + TransferPolicy 5% admin fee + confirm). Move: `marketplace` (TransferPolicy + rule); dApp: list for sale, browse, buy.
 
 ---
 
@@ -206,6 +212,28 @@ All run_logic entry functions take `&mut Run` (or Run by value and return it), p
 - **Layout**: `BottomNav` component with 4 links (Gacha, Inventory, Battle, Pet); wrap app or per-route layout.
 - **New components**: `GachaGearCard`, `GachaPetCard`; `InventoryList`, `EquipButtons`, `UpgradeButton` (select 3 same slot+set_id+rarity gear or 3 same pet_id+rarity pet → upgrade_gear/upgrade_pet), `ListForSaleButton` (place + list in user Kiosk), `MarketplaceList` (browse Kiosk listings), `BuyButton` (purchase + confirm policy); `Board`, `DiceRoller`, `CombatLog`, `PotionBar`, `ShopModal`; `PetList`, `PetEquip`, `PetCatalog`. Shared: `CharacterStats`, `EquipmentSlots`. Data hooks: `usePlayer`, `useRun`, `useOwnedNFTs`, `useKioskListings`.
 
+### 3.7 Upgrade and Marketplace (dApp – handle in Inventory)
+
+**Upgrade (3 same → 1 next rarity)**
+
+- **Gear**: User selects exactly 3 EquipmentNFTs with **same slot**, **same set_id**, **same rarity**. “Upgrade” button builds tx: `upgrade::upgrade_gear_entry(a, b, c, nft_mint_authority)` (objects by ID; pass `NFT_MINT_AUTHORITY_ID` from config). Mystic (rarity 4) cannot be upgraded; disable or hide upgrade when selected rarity is Mystic.
+- **Pet**: User selects exactly 3 PetNFTs with **same pet_id**, **same rarity**. “Upgrade” button: `upgrade::upgrade_pet_entry(a, b, c, nft_mint_authority)`. Same Mystic rule.
+- **UI**: Multi-select (checkboxes or “Select for upgrade”) with validation: only allow 3; only allow when all 3 match (slot+set_id+rarity for gear, pet_id+rarity for pet). Show “Upgrade to &lt;next rarity&gt;” and tx digest / explorer link on success.
+
+**Marketplace (list + buy via Sui Kiosk, 5% admin fee)**
+
+- **List for sale**: User owns Kiosk (create with `kiosk::default()` if needed). Place EquipmentNFT or PetNFT in Kiosk (`kiosk::place`), then list with price in MIST (`kiosk::list`). Two-step or single tx; store listing for type `EquipmentNFT` / `PetNFT` so buyers can discover.
+- **Browse marketplace**: Query Kiosk listings (e.g. `getDynamicFields` on Kiosk or indexer) for `EquipmentNFT` / `PetNFT`; show list with price, seller, item summary.
+- **Buy**: Buyer tx: (1) `kiosk::purchase(kiosk_id, item_id, list_price)` → receives NFT + `TransferRequest&lt;T&gt;`; (2) satisfy 5% admin rule: `marketplace::pay_admin_fee_gear` or `marketplace::pay_admin_fee_pet` with fee coin (≥ 5% of `list_price`); (3) `transfer_policy::confirm_request` so buyer keeps NFT. Seller receives 95% in their Kiosk (withdrawable). Config: `TRANSFER_POLICY_GEAR_ID`, `TRANSFER_POLICY_PET_ID` for policy objects.
+- **Admin**: Admin holds `TransferPolicyCap`; can call `transfer_policy::withdraw` to pull 5% fee from policy balance (out-of-scope for default dApp UI; document in README).
+
+**Implementation checklist (dApp)**
+
+- Upgrade: `UpgradeButton` or select flow + `upgrade_gear_entry` / `upgrade_pet_entry` with `NFT_MINT_AUTHORITY_ID`.
+- List for sale: ensure user Kiosk exists; `kiosk::place` + `kiosk::list` for selected NFT; price input (MIST).
+- Marketplace: hook or query for listings (by type); list UI with price/seller.
+- Buy: `kiosk::purchase` + `pay_admin_fee_gear`/`pay_admin_fee_pet` + `confirm_request` in one tx or PTB.
+
 ---
 
 ## 4. Deployment and Repo
@@ -228,6 +256,9 @@ All run_logic entry functions take `&mut Run` (or Run by value and return it), p
 9. **dApp – layout**: Bottom nav (Gacha, Inventory, Battle, Pet); routes and active state.
 10. **dApp – Gacha**: Gacha Gear + Gacha Pet sections, pull tx, result + animation.
 11. **dApp – Inventory**: List gear/pet, equip, **Upgrade** (select 3 same → upgrade), **List for sale** (Kiosk place+list), **Marketplace** (browse + buy with policy confirm).
+
+11a. **Handle upgrade (dApp)**: UpgradeButton / multi-select 3 same gear or 3 same pet; call `upgrade::upgrade_gear_entry` / `upgrade::upgrade_pet_entry` with `NFT_MINT_AUTHORITY_ID`; disable for Mystic.
+11b. **Handle marketplace (dApp)**: List for sale = user Kiosk + `kiosk::place` + `kiosk::list`; Marketplace = browse listings, Buy = `kiosk::purchase` + `marketplace::pay_admin_fee_*` + `transfer_policy::confirm_request`; config `TRANSFER_POLICY_GEAR_ID`, `TRANSFER_POLICY_PET_ID`.
 12. **dApp – Battle**: Board, roll, combat log, potion, shop; “Start Run”; dice/token animations.
 13. **dApp – Pet**: Pet list, equip one pet; catalog (names + art hints).
 14. **Docs and deploy**: README, env example (incl. GACHA_GEAR_ID, GACHA_PET_ID, TRANSFER_POLICY_*), deploy and verify on testnet.

@@ -5,6 +5,8 @@ import { useOwnedNFTs } from "@/data";
 import { RARITY_NAMES, SLOT_NAMES } from "@/config/contracts";
 import { PET_CATALOG } from "@/config/contracts";
 import type { EquipmentNFTFields, PetNFTFields } from "@/config/contracts";
+import { UpgradeGearBlock } from "@/components/inventory/UpgradeGearBlock";
+import { UpgradePetBlock } from "@/components/inventory/UpgradePetBlock";
 
 function GearItem({
   objectId,
@@ -51,9 +53,73 @@ function PetItem({
   );
 }
 
+function groupGearForUpgrade(
+  gear: { objectId: string; fields: EquipmentNFTFields }[]
+): { key: string; objectIds: [string, string, string]; fields: EquipmentNFTFields }[] {
+  const byKey = new Map<
+    string,
+    { objectIds: string[]; fields: EquipmentNFTFields }
+  >();
+  for (const item of gear) {
+    const f = item.fields;
+    const key = `${f.slot}_${f.set_id}_${f.rarity}`;
+    let entry = byKey.get(key);
+    if (!entry) {
+      entry = { objectIds: [], fields: f };
+      byKey.set(key, entry);
+    }
+    entry.objectIds.push(item.objectId);
+  }
+  const out: { key: string; objectIds: [string, string, string]; fields: EquipmentNFTFields }[] = [];
+  for (const [key, { objectIds, fields }] of byKey) {
+    if (objectIds.length >= 3 && fields.rarity < 4)
+      out.push({
+        key,
+        objectIds: [objectIds[0], objectIds[1], objectIds[2]],
+        fields,
+      });
+  }
+  return out;
+}
+
+function groupPetsForUpgrade(
+  pets: { objectId: string; fields: PetNFTFields }[]
+): { key: string; objectIds: [string, string, string]; fields: PetNFTFields }[] {
+  const byKey = new Map<
+    string,
+    { objectIds: string[]; fields: PetNFTFields }
+  >();
+  for (const item of pets) {
+    const f = item.fields;
+    const key = `${f.pet_id}_${f.rarity}`;
+    let entry = byKey.get(key);
+    if (!entry) {
+      entry = { objectIds: [], fields: f };
+      byKey.set(key, entry);
+    }
+    entry.objectIds.push(item.objectId);
+  }
+  const out: { key: string; objectIds: [string, string, string]; fields: PetNFTFields }[] = [];
+  for (const [key, { objectIds, fields }] of byKey) {
+    if (objectIds.length >= 3 && fields.rarity < 4)
+      out.push({
+        key,
+        objectIds: [objectIds[0], objectIds[1], objectIds[2]],
+        fields,
+      });
+  }
+  return out;
+}
+
 export default function InventoryPage() {
   const account = useCurrentAccount();
-  const { gear, pets, isPending } = useOwnedNFTs();
+  const { gear, pets, isPending, refetch } = useOwnedNFTs();
+  const gearUpgrades = groupGearForUpgrade(
+    gear.map((g) => ({ objectId: g.objectId, fields: g.fields as EquipmentNFTFields }))
+  );
+  const petUpgrades = groupPetsForUpgrade(
+    pets.map((p) => ({ objectId: p.objectId, fields: p.fields as PetNFTFields }))
+  );
 
   if (!account) {
     return (
@@ -76,6 +142,40 @@ export default function InventoryPage() {
         <p className="text-sm text-muted-foreground">Loading...</p>
       ) : (
         <>
+          {gearUpgrades.length > 0 && (
+            <section>
+              <h2 className="text-lg font-medium">Upgrade gear (3 same → 1 next rarity)</h2>
+              <ul className="mt-2 space-y-2">
+                {gearUpgrades.map((g) => (
+                  <li key={g.key}>
+                    <UpgradeGearBlock
+                      objectIds={g.objectIds}
+                      fields={g.fields}
+                      onSuccess={refetch}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {petUpgrades.length > 0 && (
+            <section>
+              <h2 className="text-lg font-medium">Upgrade pets (3 same → 1 next rarity)</h2>
+              <ul className="mt-2 space-y-2">
+                {petUpgrades.map((p) => (
+                  <li key={p.key}>
+                    <UpgradePetBlock
+                      objectIds={p.objectIds}
+                      fields={p.fields}
+                      onSuccess={refetch}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <section>
             <h2 className="text-lg font-medium">Gear ({gear.length})</h2>
             {gear.length === 0 ? (
@@ -112,6 +212,13 @@ export default function InventoryPage() {
                 ))}
               </ul>
             )}
+          </section>
+
+          <section className="rounded-lg border bg-muted/30 p-4">
+            <h2 className="text-lg font-medium">Marketplace</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              List for sale: place NFT in your Kiosk and list with price (MIST). Buy: kiosk::purchase + pay 5% admin fee + confirm_request. Configure TRANSFER_POLICY_* and use Kiosk SDK for full flow.
+            </p>
           </section>
         </>
       )}

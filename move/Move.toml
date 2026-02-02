@@ -9,3 +9,4 @@ edition = "2024"         # edition = "legacy" to use legacy (pre-2024) Move
 
 [addresses]
 sui_venture_project = "0x0"
+admin = "0x994845a200c22d021eb08f97136a43fb04ea93fe27b1efbf8fd95f8a3034757b"

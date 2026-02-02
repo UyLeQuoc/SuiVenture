@@ -6,6 +6,7 @@
 @theme inline {
   /* TODO: Customise fonts accordingly for each product */
   --font-sans: var(--font-geist-sans);
+  --font-pixelify: var(--font-pixelify-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 
   /* === Coloring tokens: Used by default by the Shadcn Components === */
@@ -172,3 +173,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+/* no scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* no scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* no scrollbar */

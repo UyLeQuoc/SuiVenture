@@ -7,7 +7,6 @@ import { useState } from "react";
 import { Dice1, Loader2 } from "lucide-react";
 import {
   PACKAGE_ID,
-  GACHA_GEAR_ID,
   NFT_MINT_AUTHORITY_ID,
   RANDOM_ID,
   GACHA_PRICE_MIST,
@@ -18,7 +17,6 @@ import {
 
 const CONFIGURED =
   PACKAGE_ID !== "0x0" &&
-  GACHA_GEAR_ID !== "0x0" &&
   NFT_MINT_AUTHORITY_ID !== "0x0" &&
   RANDOM_ID !== "0x0";
 
@@ -45,7 +43,6 @@ export function GachaGearCard() {
     tx.moveCall({
       target: `${PACKAGE_ID}::${MODULE_GACHA_GEAR}::pull_gear`,
       arguments: [
-        tx.object(GACHA_GEAR_ID),
         tx.object(NFT_MINT_AUTHORITY_ID),
         coin,
         tx.object(RANDOM_ID),
@@ -73,8 +70,8 @@ export function GachaGearCard() {
           Gacha Gear
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Set NEXT_PUBLIC_PACKAGE_ID, GACHA_GEAR_ID, NFT_MINT_AUTHORITY_ID, and
-          RANDOM_ID to enable.
+          Set NEXT_PUBLIC_PACKAGE_ID, NFT_MINT_AUTHORITY_ID, and RANDOM_ID to
+          enable.
         </p>
       </section>
     );
