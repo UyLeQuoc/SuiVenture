@@ -16,11 +16,11 @@ const RARITY_EPIC: u8 = 2;
 const RARITY_LEGEND: u8 = 3;
 const RARITY_MYSTIC: u8 = 4;
 
-// Slots: Helmet, Weapon, Shield, Boots
+// Slots: 0 Helmet, 1 Armor, 2 Weapon, 3 Shield
 const SLOT_HELMET: u8 = 0;
-const SLOT_WEAPON: u8 = 1;
-const SLOT_SHIELD: u8 = 2;
-const SLOT_BOOTS: u8 = 3;
+const SLOT_ARMOR: u8 = 1;
+const SLOT_WEAPON: u8 = 2;
+const SLOT_SHIELD: u8 = 3;
 
 const NUM_SLOTS: u8 = 4;
 const NUM_SET_IDS: u8 = 2;
@@ -183,6 +183,7 @@ public fun destroy_pet(pet: PetNFT) {
 // Mint gear (called by gacha_gear)
 // ---------------------------------------------------------------------------
 
+/// Returns the object ID of the minted gear (for event emission).
 public fun mint_gear(
     _authority: &mut NftMintAuthority,
     slot: u8,
@@ -193,7 +194,7 @@ public fun mint_gear(
     acc: u64,
     def: u64,
     ctx: &mut TxContext,
-) {
+): ID {
     assert!(slot < NUM_SLOTS, EInvalidSlot);
     assert!(set_id < NUM_SET_IDS, EInvalidSetId);
     assert!(rarity <= RARITY_MYSTIC, EInvalidRarity);
@@ -207,13 +208,16 @@ public fun mint_gear(
         acc,
         def,
     };
+    let id = object::id(&nft);
     transfer::transfer(nft, ctx.sender());
+    id
 }
 
 // ---------------------------------------------------------------------------
 // Mint pet (called by gacha_pet). Creates and transfers to ctx.sender().
 // ---------------------------------------------------------------------------
 
+/// Returns the object ID of the minted pet (for event emission).
 public fun mint_pet(
     _authority: &mut NftMintAuthority,
     pet_id: u8,
@@ -221,7 +225,7 @@ public fun mint_pet(
     bonus_type: u8,
     bonus_value: u64,
     ctx: &mut TxContext,
-) {
+): ID {
     assert!(pet_id < NUM_PET_IDS, EInvalidPetId);
     assert!(rarity <= RARITY_MYSTIC, EInvalidRarity);
     let nft = PetNFT {
@@ -231,5 +235,7 @@ public fun mint_pet(
         bonus_type,
         bonus_value,
     };
+    let id = object::id(&nft);
     transfer::transfer(nft, ctx.sender());
+    id
 }

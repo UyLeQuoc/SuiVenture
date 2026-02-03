@@ -36,7 +36,7 @@ function PolicyCard({
 }) {
   const hasBalance = balanceMist !== "0" && BigInt(balanceMist) > BigInt(0);
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
+    <div className="rounded-sm border bg-card p-4 shadow-sm">
       <h3 className="font-semibold text-foreground">{label}</h3>
       <p className="mt-1 text-2xl font-mono tabular-nums text-primary">
         {balanceSui} SUI
@@ -209,7 +209,7 @@ export default function AdminPage() {
         )}
       </section>
 
-      <section className="rounded-xl border bg-muted/30 p-4">
+      <section className="rounded-sm border bg-muted/30 p-4">
         <h2 className="text-sm font-medium text-muted-foreground">
           Total (both policies)
         </h2>

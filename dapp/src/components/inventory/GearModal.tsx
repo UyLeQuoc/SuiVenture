@@ -4,6 +4,7 @@ import type { EquipmentNFTFields } from "@/config/contracts";
 import { RARITY_NAMES, SLOT_NAMES } from "@/config/contracts";
 import { cn } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
+import { GearCard } from "./GearCard";
 
 export interface GearModalState {
   objectId: string | null;
@@ -51,6 +52,9 @@ export function GearModal({
         <h2 id="gear-modal-title" className="sr-only">
           Gear details
         </h2>
+        <div className="w-20 mb-2">
+          <GearCard gear={fields ?? { slot: 0, set_id: 0, rarity: 0 }} />
+        </div>
         <div className="mb-4">
           {fields ? (
             <>

@@ -5,11 +5,11 @@ import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useOwnedNFTs } from "@/data";
 import { usePlayer } from "@/data";
 import {
-  RARITY_NAMES,
   SLOT_NAMES,
   type EquipmentNFTFields,
   type PlayerFields,
 } from "@/config/contracts";
+import { GearCard } from "@/components/inventory/GearCard";
 import { GearModal, type GearModalState } from "@/components/inventory/GearModal";
 import { cn } from "@/lib/utils";
 
@@ -125,82 +125,120 @@ export default function InventoryPage() {
 
   if (!account) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center text-gray-400">
-        Connect wallet to view inventory.
+      <div className="flex min-h-[40vh] items-center justify-center rounded-xl border border-[#6D678F]/30 bg-[#252430]/40 px-6 py-12">
+        <p className="text-center text-gray-400">
+          Connect wallet to view inventory.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-4">
-      {/* Section 1: 4 equipped slots (no title) */}
-      <div className="grid grid-cols-4 gap-2">
-        {equippedSlots.map(({ slotIndex, fields }) => (
-          <button
-            key={slotIndex}
-            type="button"
-            onClick={() => openModalFromSlot(slotIndex)}
-            className={cn(
-              "flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 min-h-[88px] transition-colors",
-              "border-[#6D678F]/50 bg-[#252430]/60 hover:border-[#6D678F] hover:bg-[#252430]"
-            )}
-          >
-            <span className="text-xs font-medium text-gray-400">
-              {SLOT_NAMES[slotIndex]}
-            </span>
-            {fields ? (
-              <span className="mt-1 text-center text-xs text-white">
-                {RARITY_NAMES[fields.rarity]} · +{fields.atk}
-              </span>
-            ) : (
-              <span className="mt-1 text-xs text-gray-500">Empty</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Section 2: list of gear (no title) */}
-      {isPending ? (
-        <p className="text-sm text-gray-400">Loading...</p>
-      ) : gear.length === 0 ? (
-        <p className="text-sm text-gray-400">No gear. Pull from Shop.</p>
-      ) : (
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {gear.map((item) => {
-            const f = item.fields as EquipmentNFTFields;
-            const equipped = isGearEquipped(item.objectId, player);
-            return (
-              <li key={item.objectId}>
-                <button
-                  type="button"
-                  onClick={() => openModalFromGear(item.objectId, f)}
+    <div className="space-y-8 pb-8">
+      {/* Equipped: 4 slots as GearCards or empty placeholders */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+          Equipped
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {equippedSlots.map(({ slotIndex, fields }) => (
+            <button
+              key={slotIndex}
+              type="button"
+              onClick={() => openModalFromSlot(slotIndex)}
+              className="group w-full max-w-[140px] justify-self-center focus:outline-none focus:ring-2 focus:ring-[#6D678F] focus:ring-offset-2 focus:ring-offset-[#1a191e] rounded-sm"
+            >
+              {fields ? (
+                <GearCard
+                  gear={{
+                    slot: fields.slot,
+                    set_id: fields.set_id,
+                    rarity: fields.rarity,
+                    atk: fields.atk,
+                    hp: fields.hp,
+                    acc: fields.acc,
+                    def: fields.def,
+                  }}
+                  showMeta={false}
+                  className="transition-transform group-hover:scale-[1.02] group-active:scale-[0.98]"
+                />
+              ) : (
+                <div
                   className={cn(
-                    "w-full rounded-lg border p-3 text-left transition-colors",
-                    "border-[#6D678F]/30 bg-[#252430]/60 hover:border-[#6D678F] hover:bg-[#252430]"
+                    "flex aspect-square w-full flex-col items-center justify-center rounded-sm border-2 border-dashed transition-colors",
+                    "border-[#6D678F]/50 bg-[#252430]/60 group-hover:border-[#6D678F] group-hover:bg-[#252430]/80"
                   )}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium text-white">
-                        {SLOT_NAMES[f.slot]} · Set {f.set_id} ·{" "}
-                        {RARITY_NAMES[f.rarity] ?? `Rarity ${f.rarity}`}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        ATK +{f.atk} HP +{f.hp} ACC +{f.acc} DEF +{f.def}
-                      </p>
-                    </div>
+                  <span className="text-xs font-medium text-gray-500">
+                    {SLOT_NAMES[slotIndex]}
+                  </span>
+                  <span className="mt-1 text-xs text-gray-600">Empty</span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Backpack: grid of GearCards */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+          Backpack
+        </h2>
+        {isPending ? (
+          <div className="flex min-h-[120px] items-center justify-center rounded-xl border border-[#6D678F]/20 bg-[#252430]/30">
+            <p className="text-sm text-gray-500">Loading...</p>
+          </div>
+        ) : gear.length === 0 ? (
+          <div className="flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-[#6D678F]/30 bg-[#252430]/20">
+            <p className="text-center text-sm text-gray-500">
+              No gear yet.
+              <br />
+              <span className="text-gray-600">Pull from Shop to get gear.</span>
+            </p>
+          </div>
+        ) : (
+          <ul className="grid gap-3 grid-cols-4">
+            {gear.map((item) => {
+              const f = item.fields as EquipmentNFTFields;
+              const equipped = isGearEquipped(item.objectId, player);
+              return (
+                <li key={item.objectId} className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => openModalFromGear(item.objectId, f)}
+                    className={cn(
+                      "group relative w-full max-w-[140px] focus:outline-none focus:ring-2 focus:ring-[#6D678F] focus:ring-offset-2 focus:ring-offset-[#1a191e] rounded-sm",
+                      "transition-transform group-hover:scale-[1.02] group-active:scale-[0.98]"
+                    )}
+                  >
+                    <GearCard
+                      gear={{
+                        slot: f.slot,
+                        set_id: f.set_id,
+                        rarity: f.rarity,
+                        atk: f.atk,
+                        hp: f.hp,
+                        acc: f.acc,
+                        def: f.def,
+                      }}
+                      showMeta={false}
+                    />
                     {equipped && (
-                      <span className="shrink-0 rounded bg-[#6D678F] px-2 py-0.5 text-xs font-medium text-white">
-                        Equipped
+                      <span
+                        className="absolute top-1 left-1 rounded bg-[#6D678F]/90 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm"
+                        aria-hidden
+                      >
+                        On
                       </span>
                     )}
-                  </div>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       <GearModal
         open={modal.open}

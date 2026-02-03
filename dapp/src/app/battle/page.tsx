@@ -18,7 +18,7 @@ import { ShopModal } from "@/components/battle/ShopModal";
 import { cn } from "@/lib/utils";
 
 const CONFIGURED =
-  PACKAGE_ID !== "0x0" && RANDOM_ID !== "0x0";
+  PACKAGE_ID !== "0x0";
 
 export default function BattlePage() {
   const account = useCurrentAccount();

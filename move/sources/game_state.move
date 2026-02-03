@@ -20,11 +20,11 @@ const BASE_HP: u64 = 100;
 const BASE_ACC: u64 = 80;
 const BASE_DEF: u64 = 5;
 
-// Slots: Helmet, Weapon, Shield, Boots
+// Slots: 0 Helmet, 1 Armor, 2 Weapon, 3 Shield (Player/Run fields map by index)
 const SLOT_HELMET: u8 = 0;
-const SLOT_WEAPON: u8 = 1;
-const SLOT_SHIELD: u8 = 2;
-const SLOT_BOOTS: u8 = 3;
+const SLOT_ARMOR: u8 = 1;
+const SLOT_WEAPON: u8 = 2;
+const SLOT_SHIELD: u8 = 3;
 
 // ---------------------------------------------------------------------------
 // Errors

@@ -50,7 +50,7 @@ export function RaritySwatch({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border-2 p-6 min-h-[120px] transition-colors",
+        "flex flex-col items-center justify-center rounded-sm border-2 p-6 min-h-[120px] transition-colors",
         style.bg,
         style.border,
         style.text,

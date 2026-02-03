@@ -16,8 +16,6 @@ After deploying the Move package (see repo root README), set in `.env.local`:
 
 - `NEXT_PUBLIC_PACKAGE_ID` – from publish output
 - `NEXT_PUBLIC_NFT_MINT_AUTHORITY_ID` – from publish output (created in `nft_collection::init`)
-- `NEXT_PUBLIC_GACHA_GEAR_ID`, `NEXT_PUBLIC_GACHA_PET_ID` – from publish output (**Created Objects**); `gacha_gear::init` and `gacha_pet::init` create one shared GachaGear and one shared GachaPet on publish
-- `NEXT_PUBLIC_RANDOM_ID` – Sui system Random object ID for the network (required for gacha and battle). On testnet/devnet get it from chain config or a “get random object” query
 - `NEXT_PUBLIC_TRANSFER_POLICY_GEAR_ID`, `NEXT_PUBLIC_TRANSFER_POLICY_PET_ID` – **not** from publish. After publish, call **once** `marketplace::create_marketplace_policies(publisher)` with your **Publisher** (from publish); use the **Created Objects** (the two shared TransferPolicy IDs) from that tx. The two TransferPolicyCap objects go to your wallet (admin)
 
 ### Install and run

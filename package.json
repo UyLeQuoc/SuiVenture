@@ -5,6 +5,7 @@
   "workspaces": ["dapp", "ts-utils"],
   "scripts": {
     "dev": "bun run --filter '@sui-venture/dapp' dev",
+    "build": "bun run --filter '@sui-venture/dapp' build",
     "install:verbose": "bun install --verbose",
     "test": "bun run --filter '*' test",
     "coverage": "bun run --filter '*' coverage",

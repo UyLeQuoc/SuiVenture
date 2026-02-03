@@ -1,11 +1,13 @@
 /// Gacha for pets only. Pay SUI, get random PetNFT (pet_id, rarity weighted).
 /// Payment is sent directly to admin address (no shared GachaPet object).
+/// Supports 1x (0.01 SUI) or 10x (0.1 SUI); emits PetPulled per item.
 module sui_venture_project::gacha_pet;
 
 use sui::coin::{Self, Coin};
+use sui::event;
+use sui::object;
 use sui::random::{Self, Random, RandomGenerator};
 use sui::sui::SUI;
-use sui::transfer;
 use sui::tx_context::TxContext;
 
 use sui_venture_project::nft_collection::{Self, NftMintAuthority};
@@ -41,6 +43,21 @@ const BONUS_CRIT: u8 = 4;
 // ---------------------------------------------------------------------------
 
 const EInsufficientPayment: u64 = 1;
+const EInvalidCount: u64 = 2;
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+/// Emitted per pet minted (1 or 10 per tx). Frontend uses this to show items.
+public struct PetPulled has copy, drop {
+    sender: address,
+    object_id: object::ID,
+    pet_id: u8,
+    rarity: u8,
+    bonus_type: u8,
+    bonus_value: u64,
+}
 
 // ---------------------------------------------------------------------------
 // Weighted rarity: same as gacha_gear
@@ -70,18 +87,21 @@ fun bonus_value_for_rarity(base: u64, rarity: u8): u64 {
 }
 
 // ---------------------------------------------------------------------------
-// Pull pet: pay PRICE_MIST (to admin), get random PetNFT
+// Pull pet: pay count * PRICE_MIST (1x = 0.01 SUI, 10x = 0.1 SUI), get random PetNFT(s)
 // ---------------------------------------------------------------------------
 
-/// Pay price (to admin wallet), receive random PetNFT. Refund excess coin to sender.
+/// Pay total (count * 0.01 SUI) to admin; receive count random PetNFTs. Emits PetPulled per item.
 public entry fun pull_pet(
     authority: &mut NftMintAuthority,
     mut coin: Coin<SUI>,
+    count: u8,
     r: &Random,
     ctx: &mut TxContext,
 ) {
-    assert!(coin::value(&coin) >= PRICE_MIST, EInsufficientPayment);
-    let pay = coin::split(&mut coin, PRICE_MIST, ctx);
+    assert!(count == 1 || count == 10, EInvalidCount);
+    let total = (count as u64) * PRICE_MIST;
+    assert!(coin::value(&coin) >= total, EInsufficientPayment);
+    let pay = coin::split(&mut coin, total, ctx);
     transfer::public_transfer(pay, ADMIN);
     if (coin::value(&coin) > 0) {
         transfer::public_transfer(coin, ctx.sender());
@@ -89,11 +109,23 @@ public entry fun pull_pet(
         coin::destroy_zero(coin);
     };
 
+    let sender = ctx.sender();
     let mut generator = random::new_generator(r, ctx);
-    let pet_id = random::generate_u8_in_range(&mut generator, 0, NUM_PET_IDS - 1);
-    let rarity = roll_rarity(&mut generator);
-    let (bonus_type, base_value) = bonus_for_pet(pet_id);
-    let bonus_value = bonus_value_for_rarity(base_value, rarity);
-
-    nft_collection::mint_pet(authority, pet_id, rarity, bonus_type, bonus_value, ctx);
+    let mut i = 0u8;
+    while (i < count) {
+        let pet_id = random::generate_u8_in_range(&mut generator, 0, NUM_PET_IDS - 1);
+        let rarity = roll_rarity(&mut generator);
+        let (bonus_type, base_value) = bonus_for_pet(pet_id);
+        let bonus_value = bonus_value_for_rarity(base_value, rarity);
+        let object_id = nft_collection::mint_pet(authority, pet_id, rarity, bonus_type, bonus_value, ctx);
+        event::emit(PetPulled {
+            sender,
+            object_id,
+            pet_id,
+            rarity,
+            bonus_type,
+            bonus_value,
+        });
+        i = i + 1;
+    };
 }
