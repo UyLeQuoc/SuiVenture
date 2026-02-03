@@ -190,6 +190,26 @@ export default function PetPage() {
         )}
       </section>
 
+      {/* Pet catalog */}
+      <section
+        className={cn(
+          "rounded-xl border p-4",
+          "border-[#6D678F]/30 bg-[#252430]/40"
+        )}
+      >
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+          Pet catalog
+        </h2>
+        <ul className="space-y-1.5 text-sm text-gray-400">
+          {PET_CATALOG.map((p) => (
+            <li key={p.pet_id}>
+              <span className="font-medium text-white">{p.name}</span>:{" "}
+              {p.bonus_type} · {p.art_hint}
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <PetModal
         open={modal.open}
         onClose={closeModal}
