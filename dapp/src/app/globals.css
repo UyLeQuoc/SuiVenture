@@ -186,3 +186,27 @@
 }
 
 /* no scrollbar */
+
+/* Gacha chest: gentle scaleY float */
+@keyframes chest-float {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.05);
+  }
+}
+
+/* Sparkle twinkle around chest */
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}

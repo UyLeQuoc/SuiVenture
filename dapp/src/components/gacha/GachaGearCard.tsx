@@ -112,23 +112,56 @@ export function GachaGearCard() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {/* gacha chest */}
+      {/* gacha chest: scaleY float + sparkles */}
       <div className="absolute top-40 left-1/2 -translate-x-1/2 z-10 w-50">
-        <img src="/gear-chest.png" alt="Gacha Chest" className="w-full object-cover" />
+        <div
+          className="relative inline-block origin-[center_100%]"
+          style={{
+            animation: "chest-float 2.5s ease-in-out infinite",
+          }}
+        >
+          {/* sparkles around chest */}
+          {[
+            { top: "5%", left: "-8%", delay: "0s" },
+            { top: "-2%", left: "15%", delay: "0.3s" },
+            { top: "10%", right: "-5%", left: "auto", delay: "0.6s" },
+            { top: "35%", left: "-12%", delay: "0.2s" },
+            { top: "40%", right: "-10%", left: "auto", delay: "0.5s" },
+            { top: "20%", left: "-15%", delay: "0.4s" },
+            { top: "25%", right: "-12%", left: "auto", delay: "0.1s" },
+            { top: "-5%", right: "10%", left: "auto", delay: "0.45s" },
+          ].map((pos, i) => (
+            <span
+              key={`${pos.top}-${pos.left ?? pos.right}-${pos.delay}`}
+              className="absolute size-2 rounded-full bg-amber-200/90 shadow-[0_0_6px_2px_rgba(251,191,36,0.6)]"
+              style={{
+                ...pos,
+                animation: "sparkle 1.8s ease-in-out infinite",
+                animationDelay: pos.delay,
+              }}
+              aria-hidden
+            />
+          ))}
+          <img
+            src="/gear-chest.png"
+            alt="Gacha Chest"
+            className="relative z-10 w-full object-cover"
+          />
+        </div>
       </div>
       <div className="absolute -bottom-25 left-0 right-0 flex gap-2 bg-[#3A2E2E] p-4 py-2 border-3 border-[#040001] flex justify-center">
           <button type="button" onClick={handlePull} disabled={!account || isPending} className="relative inline-flex items-center justify-center w-32 text-sm font-medium text-white hover:opacity-80 cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
             <img src="/gacha-green-button.png" alt="Gear Gacha" className="w-full object-cover" />
             <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-1">
               <span className="whitespace-nowrap">1x Draw</span>
-              <span className="flex items-center gap-0.5 whitespace-nowrap"><img src="/sui.png" alt="Coin" className="w-4 h-4 object-cover" />0.1 SUI</span>
+              <span className="flex items-center gap-0.5 whitespace-nowrap"><img src="/sui.png" alt="Coin" className="w-4 h-4 object-cover" />0.01 SUI</span>
             </span>
           </button>
           <button type="button" onClick={handlePull} disabled={!account || isPending} className="relative inline-flex items-center justify-center w-32 text-sm font-medium text-white hover:opacity-80 cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
             <img src="/gacha-yellow-button.png" alt="Gear Gacha" className="w-full object-cover" />
             <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-1">
               <span className="whitespace-nowrap">10x Draw</span>
-              <span className="flex items-center gap-0.5 whitespace-nowrap"><img src="/sui.png" alt="Coin" className="w-4 h-4 object-cover" />0.9 SUI</span>
+              <span className="flex items-center gap-0.5 whitespace-nowrap"><img src="/sui.png" alt="Coin" className="w-4 h-4 object-cover" />0.1 SUI</span>
             </span>
           </button>
         </div>
