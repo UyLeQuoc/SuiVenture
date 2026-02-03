@@ -15,6 +15,7 @@ import {
 import { Board } from "@/components/battle/Board";
 import { PotionBar } from "@/components/battle/PotionBar";
 import { ShopModal } from "@/components/battle/ShopModal";
+import { cn } from "@/lib/utils";
 
 const CONFIGURED =
   PACKAGE_ID !== "0x0" && RANDOM_ID !== "0x0";
@@ -99,34 +100,32 @@ export default function BattlePage() {
 
   if (!account) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Battle</h1>
-        <p className="text-muted-foreground">Connect wallet to start.</p>
+      <div className="flex min-h-[40vh] items-center justify-center text-gray-400">
+        Connect wallet to start.
       </div>
     );
   }
 
   if (!CONFIGURED) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Battle</h1>
-        <p className="text-muted-foreground">
-          Set NEXT_PUBLIC_PACKAGE_ID and RANDOM_ID to enable.
-        </p>
+      <div className="flex min-h-[40vh] items-center justify-center text-gray-400">
+        Set NEXT_PUBLIC_PACKAGE_ID and RANDOM_ID to enable.
       </div>
     );
   }
 
   if (!player) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Battle</h1>
-        <p className="text-muted-foreground">Create a player first.</p>
+      <div className="flex flex-col items-center justify-center gap-4 py-12">
+        <p className="text-sm text-gray-400">Create a player first.</p>
         <button
           type="button"
           onClick={handleCreatePlayer}
           disabled={isPending}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          className={cn(
+            "rounded-md px-4 py-2 text-sm font-medium transition-colors",
+            "bg-[#6D678F] text-white hover:bg-[#5a5478] disabled:opacity-50"
+          )}
         >
           {isPending ? "..." : "Create player"}
         </button>
@@ -136,14 +135,16 @@ export default function BattlePage() {
 
   if (!run) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Battle</h1>
-        <p className="text-muted-foreground">Start a run to play.</p>
+      <div className="flex flex-col items-center justify-center gap-4 py-12">
+        <p className="text-sm text-gray-400">Start a run to play.</p>
         <button
           type="button"
           onClick={handleStartRun}
           disabled={isPending}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          className={cn(
+            "rounded-md px-4 py-2 text-sm font-medium transition-colors",
+            "bg-[#6D678F] text-white hover:bg-[#5a5478] disabled:opacity-50"
+          )}
         >
           {isPending ? "..." : "Start run"}
         </button>
@@ -152,16 +153,19 @@ export default function BattlePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Battle</h1>
-
-      <div className="rounded-lg border bg-card p-4">
-        <p className="text-sm font-medium">
+    <div className="space-y-6 pb-4">
+      {/* Run stats */}
+      <div
+        className={cn(
+          "rounded-lg border p-4",
+          "border-[#6D678F]/30 bg-[#252430]/60"
+        )}
+      >
+        <p className="text-sm font-medium text-white">
           HP: {run.current_hp} / {run.max_hp}
         </p>
-        <p className="text-sm text-muted-foreground">
-          Floor {run.floor} · Roll count: {run.roll_count} · Blue gems:{" "}
-          {run.blue_gems}
+        <p className="text-xs text-gray-400 mt-1">
+          Floor {run.floor} · Rolls: {run.roll_count} · Blue gems: {run.blue_gems}
         </p>
       </div>
 
@@ -176,7 +180,10 @@ export default function BattlePage() {
           type="button"
           onClick={handleRoll}
           disabled={isPending}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          className={cn(
+            "rounded-md px-4 py-3 text-sm font-medium transition-colors",
+            "bg-[#6D678F] text-white hover:bg-[#5a5478] disabled:opacity-50"
+          )}
         >
           {isPending ? "..." : "Roll 2d6"}
         </button>
@@ -184,7 +191,10 @@ export default function BattlePage() {
           <button
             type="button"
             onClick={() => setShopOpen(true)}
-            className="rounded-md border px-4 py-2 text-sm"
+            className={cn(
+              "rounded-md border px-4 py-2 text-sm font-medium transition-colors",
+              "border-[#6D678F]/50 text-gray-300 hover:bg-[#6D678F]/20"
+            )}
           >
             Open shop
           </button>
@@ -200,7 +210,7 @@ export default function BattlePage() {
       />
 
       {error && (
-        <p className="text-sm text-destructive" role="alert">
+        <p className="text-sm text-red-400" role="alert">
           {error}
         </p>
       )}

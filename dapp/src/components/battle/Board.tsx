@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 interface BoardProps {
   positionOnBoard: number;
   boardTileCount: number;
@@ -12,18 +14,19 @@ export function Board({ positionOnBoard, boardTileCount, floor }: BoardProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-xs text-gray-400">
         Floor {floor} · Tile {pos + 1} / {boardTileCount}
       </p>
       <div className="flex flex-wrap gap-1">
         {tiles.map((i) => (
           <div
             key={i}
-            className={
+            className={cn(
+              "size-8 rounded text-center text-xs leading-8 font-medium",
               i === pos
-                ? "size-8 rounded border-2 border-primary bg-primary/20 text-center text-xs leading-8 font-semibold"
-                : "size-8 rounded border border-border bg-muted/50 text-center text-xs leading-8"
-            }
+                ? "border-2 border-[#6D678F] bg-[#6D678F]/30 text-white"
+                : "border border-[#6D678F]/30 bg-[#252430]/60 text-gray-400"
+            )}
             aria-current={i === pos ? "step" : undefined}
           >
             {i + 1}

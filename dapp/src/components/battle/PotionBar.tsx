@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 interface PotionBarProps {
   potionCount: string;
   potionMaxCarry: string;
@@ -20,16 +22,24 @@ export function PotionBar({
   const heal = Number(potionHealAmount);
 
   return (
-    <div className="flex items-center gap-2 rounded-lg border bg-card p-3">
-      <span className="text-sm font-medium">
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-lg border p-3",
+        "border-[#6D678F]/30 bg-[#252430]/60"
+      )}
+    >
+      <span className="text-sm font-medium text-white">
         Potions: {count}/{max}
       </span>
-      <span className="text-sm text-muted-foreground">Heal: {heal} HP</span>
+      <span className="text-xs text-gray-400">Heal: {heal} HP</span>
       <button
         type="button"
         onClick={onUsePotion}
         disabled={count === 0 || isPending}
-        className="ml-auto rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        className={cn(
+          "ml-auto rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+          "bg-[#6D678F] text-white hover:bg-[#5a5478] disabled:opacity-50 disabled:pointer-events-none"
+        )}
       >
         {isPending ? "..." : "Use potion"}
       </button>

@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 interface ShopModalProps {
   open: boolean;
   onClose: () => void;
@@ -24,16 +26,22 @@ export function ShopModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="shop-title"
     >
-      <div className="w-full max-w-sm rounded-lg border bg-background p-4 shadow-lg">
-        <h2 id="shop-title" className="text-lg font-semibold">
+      <div
+        className="absolute inset-0 bg-black/60"
+        onClick={onClose}
+        onKeyDown={(e) => e.key === "Escape" && onClose()}
+        aria-hidden
+      />
+      <div className="relative z-10 w-full max-w-sm rounded-lg border bg-[#252430] p-4 shadow-xl border-[#6D678F]/30">
+        <h2 id="shop-title" className="text-lg font-semibold text-white">
           Shop
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-gray-400">
           Buy an upgrade (blue gems).
         </p>
         <ul className="mt-4 space-y-2">
@@ -43,7 +51,10 @@ export function ShopModal({
                 type="button"
                 onClick={() => onBuy(upgrade)}
                 disabled={isPending}
-                className="w-full rounded-md border bg-muted/50 px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-50"
+                className={cn(
+                  "w-full rounded-md border px-3 py-2 text-left text-sm font-medium transition-colors",
+                  "border-[#6D678F]/30 bg-[#1D1C21] text-white hover:bg-[#6D678F]/20 disabled:opacity-50"
+                )}
               >
                 {label}
               </button>
@@ -53,7 +64,10 @@ export function ShopModal({
         <button
           type="button"
           onClick={onClose}
-          className="mt-4 w-full rounded-md border py-2 text-sm"
+          className={cn(
+            "mt-4 w-full rounded-md border py-2 text-sm font-medium transition-colors",
+            "border-[#6D678F]/30 text-gray-300 hover:bg-[#6D678F]/20"
+          )}
         >
           Close
         </button>

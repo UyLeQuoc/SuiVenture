@@ -64,12 +64,12 @@ export function GachaGearCard() {
 
   if (!CONFIGURED) {
     return (
-      <section className="rounded-lg border bg-card p-4 text-card-foreground">
-        <h2 className="flex items-center gap-2 text-lg font-semibold">
+      <section className="rounded-lg border border-[#6D678F]/30 bg-[#252430]/60 p-4">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
           <Dice1 className="size-5" />
-          Gacha Gear
+          Gear
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-gray-400">
           Set NEXT_PUBLIC_PACKAGE_ID, NFT_MINT_AUTHORITY_ID, and RANDOM_ID to
           enable.
         </p>
@@ -78,12 +78,12 @@ export function GachaGearCard() {
   }
 
   return (
-    <section className="rounded-lg border bg-card p-4 text-card-foreground">
-      <h2 className="flex items-center gap-2 text-lg font-semibold">
+    <section className="rounded-lg border border-[#6D678F]/30 bg-[#252430]/60 p-4">
+      <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
         <Dice1 className="size-5" />
-        Gacha Gear
+        Gear
       </h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-1 text-sm text-gray-400">
         Pay 0.01 SUI for a random gear. Slots: {SLOT_NAMES.join(", ")}. Rarity:{" "}
         {RARITY_NAMES.join(" → ")}.
       </p>
@@ -92,7 +92,7 @@ export function GachaGearCard() {
           type="button"
           onClick={handlePull}
           disabled={!account || isPending}
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-[#6D678F] px-4 py-2 text-sm font-medium text-white hover:bg-[#5a5478] disabled:opacity-50 disabled:pointer-events-none"
         >
           {isPending ? (
             <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -101,18 +101,18 @@ export function GachaGearCard() {
           )}
         </button>
         {error && (
-          <p className="text-sm text-destructive" role="alert">
+          <p className="text-sm text-red-400" role="alert">
             {error}
           </p>
         )}
         {digest && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-400">
             Tx:{" "}
             <a
               href={`https://suiexplorer.com/txblock/${digest}?network=testnet`}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
+              className="text-[#6D678F] underline hover:text-[#8a84a8]"
             >
               {digest.slice(0, 10)}…
             </a>
