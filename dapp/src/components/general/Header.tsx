@@ -53,7 +53,7 @@ export const Header = () => {
           SuiVenture
         </div>
         {/* middle text */}
-        <button type="button" className="absolute top-8 left-15 flex gap-0.5 items-center text-sm" onClick={() => window.open("https://testnet.suivision.xyz/address/" + currentAccount?.address, "_blank")}>
+        <button type="button" className="hover:underline cursor-pointer absolute top-8 left-15 flex gap-0.5 items-center text-sm" onClick={() => window.open("https://testnet.suivision.xyz/address/" + currentAccount?.address, "_blank")}>
           Explorer <ExternalLink size={15} />
         </button>
         {/* bottom text */}
