@@ -42,6 +42,9 @@ export const RARITY_NAMES = [
 ] as const;
 export type RarityName = (typeof RARITY_NAMES)[number];
 
+/** Gear gacha rates (roll 0–99): sync with gacha_gear::roll_rarity. [Normal, Rare, Epic, Legend, Mystic] % */
+export const GACHA_GEAR_RARITY_PERCENTS = [50, 25, 15, 7, 3] as const;
+
 /** Gear slots: 0 Helmet, 1 Weapon, 2 Shield, 3 Boots */
 export const SLOT_NAMES = ["Helmet", "Weapon", "Shield", "Boots"] as const;
 export type SlotName = (typeof SLOT_NAMES)[number];

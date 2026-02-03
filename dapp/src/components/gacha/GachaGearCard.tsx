@@ -1,19 +1,25 @@
 "use client";
 
-import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
-import { useCurrentAccount } from "@mysten/dapp-kit";
-import { Transaction } from "@mysten/sui/transactions";
-import { useState } from "react";
-import { Dice1, Loader2 } from "lucide-react";
 import {
-  PACKAGE_ID,
-  NFT_MINT_AUTHORITY_ID,
-  RANDOM_ID,
+  GACHA_GEAR_RARITY_PERCENTS,
   GACHA_PRICE_MIST,
   MODULE_GACHA_GEAR,
+  NFT_MINT_AUTHORITY_ID,
+  PACKAGE_ID,
+  RANDOM_ID,
   RARITY_NAMES,
-  SLOT_NAMES,
 } from "@/config/contracts";
+import { RARITY_STYLES } from "@/components/rarity";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
+import { Transaction } from "@mysten/sui/transactions";
+import { InfoIcon } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const CONFIGURED =
   PACKAGE_ID !== "0x0" &&
@@ -54,71 +60,78 @@ export function GachaGearCard() {
       {
         onSuccess: (result) => {
           setDigest(result.digest ?? null);
+          // toast.success("Gear pulled successfully");
         },
         onError: (err) => {
           setError(err.message ?? "Transaction failed");
+          // toast.error(err.message ?? "Transaction failed");
         },
       }
     );
   };
 
-  if (!CONFIGURED) {
-    return (
-      <section className="rounded-lg border border-[#6D678F]/30 bg-[#252430]/60 p-4">
-        <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-          <Dice1 className="size-5" />
-          Gear
-        </h2>
-        <p className="mt-2 text-sm text-gray-400">
-          Set NEXT_PUBLIC_PACKAGE_ID, NFT_MINT_AUTHORITY_ID, and RANDOM_ID to
-          enable.
-        </p>
-      </section>
-    );
-  }
-
   return (
-    <section className="rounded-lg border border-[#6D678F]/30 bg-[#252430]/60 p-4">
-      <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
-        <Dice1 className="size-5" />
-        Gear
-      </h2>
-      <p className="mt-1 text-sm text-gray-400">
-        Pay 0.01 SUI for a random gear. Slots: {SLOT_NAMES.join(", ")}. Rarity:{" "}
-        {RARITY_NAMES.join(" → ")}.
-      </p>
-      <div className="mt-4 flex flex-col gap-2">
-        <button
-          type="button"
-          onClick={handlePull}
-          disabled={!account || isPending}
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-[#6D678F] px-4 py-2 text-sm font-medium text-white hover:bg-[#5a5478] disabled:opacity-50 disabled:pointer-events-none"
-        >
-          {isPending ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden />
-          ) : (
-            "Pull Gear (0.01 SUI)"
-          )}
-        </button>
-        {error && (
-          <p className="text-sm text-red-400" role="alert">
-            {error}
-          </p>
-        )}
-        {digest && (
-          <p className="text-sm text-gray-400">
-            Tx:{" "}
-            <a
-              href={`https://suiexplorer.com/txblock/${digest}?network=testnet`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#6D678F] underline hover:text-[#8a84a8]"
-            >
-              {digest.slice(0, 10)}…
-            </a>
-          </p>
-        )}
+    <section className="relative p-4 h-72 mb-32">
+      <img src="/gacha-gear-bg.png" alt="Gear Gacha" className="absolute top-0 left-0 w-full h-full object-cover" />
+      <div className="absolute top-7 left-1/2 -translate-x-1/2 z-10">
+        {/* title */}
+        <h2 className="text-white text-2xl font-bold">Gear Gacha</h2>
       </div>
+      {/* top right: info → dropdown rarity + % */}
+      <div className="absolute top-0 right-0 z-10">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="hover:opacity-80 transition-opacity duration-300 relative inline-flex items-center justify-center w-10 h-10 bg-[#79759C] rounded-sm cursor-pointer p-2 border-3 border-[#040001]"
+              aria-label="Rarity rates"
+            >
+              <InfoIcon className="w-5 h-5 text-white" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="bottom" className="min-w-[180px] bg-[#3A2E2E] border-3 border-[#040001]">
+            <div className="px-2 py-1.5 text-xs font-medium text-white">
+              Rarity rates
+            </div>
+            {RARITY_NAMES.map((name, index) => {
+              const style = RARITY_STYLES[index] ?? RARITY_STYLES[0];
+              const percent = GACHA_GEAR_RARITY_PERCENTS[index] ?? 0;
+              return (
+                <div
+                  key={name}
+                  className={cn(
+                    "flex items-center justify-between gap-4 px-2 py-1.5 text-sm",
+                    style.text
+                  )}
+                >
+                  <span className="font-medium">{name}</span>
+                  <span className="tabular-nums opacity-90">{percent}%</span>
+                </div>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      {/* gacha chest */}
+      <div className="absolute top-40 left-1/2 -translate-x-1/2 z-10 w-50">
+        <img src="/gear-chest.png" alt="Gacha Chest" className="w-full object-cover" />
+      </div>
+      <div className="absolute -bottom-25 left-0 right-0 flex gap-2 bg-[#3A2E2E] p-4 py-2 border-3 border-[#040001] flex justify-center">
+          <button type="button" onClick={handlePull} disabled={!account || isPending} className="relative inline-flex items-center justify-center w-32 text-sm font-medium text-white hover:opacity-80 cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
+            <img src="/gacha-green-button.png" alt="Gear Gacha" className="w-full object-cover" />
+            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-1">
+              <span className="whitespace-nowrap">1x Draw</span>
+              <span className="flex items-center gap-0.5 whitespace-nowrap"><img src="/sui.png" alt="Coin" className="w-4 h-4 object-cover" />0.1 SUI</span>
+            </span>
+          </button>
+          <button type="button" onClick={handlePull} disabled={!account || isPending} className="relative inline-flex items-center justify-center w-32 text-sm font-medium text-white hover:opacity-80 cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
+            <img src="/gacha-yellow-button.png" alt="Gear Gacha" className="w-full object-cover" />
+            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-1">
+              <span className="whitespace-nowrap">10x Draw</span>
+              <span className="flex items-center gap-0.5 whitespace-nowrap"><img src="/sui.png" alt="Coin" className="w-4 h-4 object-cover" />0.9 SUI</span>
+            </span>
+          </button>
+        </div>
     </section>
   );
 }
