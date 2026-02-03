@@ -7,12 +7,12 @@ import {
   MODULE_GACHA_PET,
   NFT_MINT_AUTHORITY_ID,
   PACKAGE_ID,
-  PET_CATALOG,
   petPulledEventType,
   RANDOM_ID,
   RARITY_NAMES,
   type PetPulledEvent,
 } from "@/config/contracts";
+import { PetCard } from "@/components/inventory/PetCard";
 import { RARITY_STYLES } from "@/components/rarity";
 import {
   DropdownMenu,
@@ -127,7 +127,7 @@ export function GachaPetCard() {
         alt="Pet Gacha"
         className="absolute top-0 left-0 w-full h-full object-cover"
       />
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+      <div className="absolute top-7 left-1/2 -translate-x-1/2 z-10">
         <h2 className="text-white text-2xl font-bold">Pet Gacha</h2>
       </div>
       <div className="absolute top-0 right-0 z-10">
@@ -168,20 +168,20 @@ export function GachaPetCard() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="absolute top-22 left-1/2 -translate-x-1/2 z-10 w-60">
+      <div className="absolute top-40 left-1/2 -translate-x-1/2 z-10 w-50">
         <div
           className="relative inline-block origin-[center_100%]"
           style={{ animation: "chest-float 2.5s ease-in-out infinite" }}
         >
           {[
             { top: "5%", left: "-8%", delay: "0s" },
-            { top: "-2%", left: "20%", delay: "0.3s" },
+            { top: "-2%", left: "15%", delay: "0.3s" },
             { top: "10%", right: "-5%", left: "auto", delay: "0.6s" },
             { top: "35%", left: "-12%", delay: "0.2s" },
             { top: "40%", right: "-10%", left: "auto", delay: "0.5s" },
             { top: "20%", left: "-15%", delay: "0.4s" },
             { top: "25%", right: "-12%", left: "auto", delay: "0.1s" },
-            { top: "-5%", right: "15%", left: "auto", delay: "0.45s" },
+            { top: "-5%", right: "10%", left: "auto", delay: "0.45s" },
           ].map((pos) => (
             <span
               key={`${pos.top}-${pos.left ?? pos.right}-${pos.delay}`}
@@ -201,7 +201,7 @@ export function GachaPetCard() {
           />
         </div>
       </div>
-      <div className="absolute -bottom-23 left-0 right-0 flex gap-2 bg-[#3A2E2E] p-4 py-2 border-3 border-[#040001] flex justify-center">
+      <div className="absolute -bottom-25 left-0 right-0 flex gap-2 bg-[#3A2E2E] p-4 py-2 border-3 border-[#040001] flex justify-center">
         <button
           type="button"
           onClick={() => handlePull(1)}
@@ -234,6 +234,7 @@ export function GachaPetCard() {
         </button>
       </div>
 
+      {/* Results modal – giống GachaGearCard */}
       {pulledItems !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
@@ -243,7 +244,7 @@ export function GachaPetCard() {
         >
           <div
             ref={modalContentRef}
-            className="relative w-full max-w-2xl max-h-[85vh] overflow-auto rounded-sm border-2 border-[#6D678F]/50 bg-[#252430] p-4 shadow-xl"
+            className="relative w-[360px] overflow-auto rounded-sm border-2 border-[#6D678F]/50 bg-[#252430] p-4 shadow-xl"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">
@@ -259,35 +260,19 @@ export function GachaPetCard() {
               </button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {pulledItems.map((item, i) => {
-                const style = RARITY_STYLES[item.rarity] ?? RARITY_STYLES[0];
-                const petInfo = PET_CATALOG[item.pet_id];
-                const name = petInfo?.name ?? `Pet ${item.pet_id}`;
-                const rarityName = RARITY_NAMES[item.rarity] ?? `Rarity ${item.rarity}`;
-                return (
-                  <div
-                    key={item.object_id ?? i}
-                    data-pet-card
-                    className={cn(
-                      "rounded-sm border-2 p-3 flex flex-col items-center justify-center min-h-[100px]",
-                      style.bg,
-                      style.border,
-                      style.text
-                    )}
-                  >
-                    <span className="font-medium">{name}</span>
-                    <span className="text-xs opacity-90">{rarityName}</span>
-                    <a
-                      href={`https://suiexplorer.com/object/${item.object_id}?network=testnet`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 text-xs underline opacity-80 hover:opacity-100"
-                    >
-                      View on Explorer
-                    </a>
-                  </div>
-                );
-              })}
+              {pulledItems.map((item, i) => (
+                <div key={item.object_id ?? i} data-pet-card>
+                  <PetCard
+                    pet={{
+                      pet_id: item.pet_id,
+                      rarity: item.rarity,
+                      bonus_type: item.bonus_type,
+                      bonus_value: item.bonus_value,
+                    }}
+                    showMeta
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
