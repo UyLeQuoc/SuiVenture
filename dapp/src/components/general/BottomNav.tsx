@@ -5,10 +5,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { href: "/shop", label: "Shop", src: "/shop.png" },
-  { href: "/inventory", label: "Inventory", src: "/gear.png" },
+  { href: "/gacha", label: "Gacha", src: "/shop.png" },
+  { href: "/inventory", label: "Gear", src: "/gear.png" },
   { href: "/battle", label: "Battle", src: "/battle.png" },
   { href: "/pet", label: "Pet", src: "/pet.png" },
+  { href: "/marketplace", label: "Market", src: "/shop.png" },
 ] as const;
 
 export function BottomNav() {

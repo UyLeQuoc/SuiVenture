@@ -48,5 +48,7 @@ export const ConnectWalletMenu = () => {
     );
   }
 
-  return <ConnectButton />;
+  return <div className="mt-2">
+    <ConnectButton />
+  </div>;
 };
