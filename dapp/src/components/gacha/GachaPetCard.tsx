@@ -259,7 +259,7 @@ export function GachaPetCard() {
                 <X className="size-5" />
               </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               {pulledItems.map((item, i) => (
                 <div key={item.object_id ?? i} data-pet-card>
                   <PetCard
