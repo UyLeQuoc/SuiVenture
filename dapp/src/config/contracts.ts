@@ -32,6 +32,12 @@ export const MODULE_GACHA_GEAR = "gacha_gear";
 export const MODULE_GACHA_PET = "gacha_pet";
 export const MODULE_NFT_COLLECTION = "nft_collection";
 export const MODULE_UPGRADE = "upgrade";
+export const MODULE_MARKETPLACE = "marketplace";
+
+/** Full type string for AdminFeeRule witness (used as the rule key on TransferPolicy). */
+export function adminFeeRuleType(packageId: string) {
+  return `${packageId}::${MODULE_MARKETPLACE}::AdminFeeRule`;
+}
 
 /** Rarity tiers: 0 Normal, 1 Rare, 2 Epic, 3 Legend, 4 Mystic */
 export const RARITY_NAMES = [

@@ -40,7 +40,6 @@ public fun pay_admin_fee_gear(
     request: &mut TransferRequest<EquipmentNFT>,
     policy: &mut TransferPolicy<EquipmentNFT>,
     mut fee_coin: Coin<SUI>,
-    _rule: AdminFeeRule,
     ctx: &mut TxContext,
 ) {
     let paid = sui::transfer_policy::paid(request);
@@ -61,7 +60,6 @@ public fun pay_admin_fee_pet(
     request: &mut TransferRequest<PetNFT>,
     policy: &mut TransferPolicy<PetNFT>,
     mut fee_coin: Coin<SUI>,
-    _rule: AdminFeeRule,
     ctx: &mut TxContext,
 ) {
     let paid = sui::transfer_policy::paid(request);
@@ -79,25 +77,27 @@ public fun pay_admin_fee_pet(
 }
 
 // ---------------------------------------------------------------------------
-// Create both TransferPolicies from Publisher (call once after publish)
+// Init: create TransferPolicies automatically on deploy
 // ---------------------------------------------------------------------------
 
-/// Deployer calls this once with their Publisher (from publish). Creates
-/// TransferPolicy<EquipmentNFT> and TransferPolicy<PetNFT>, adds 5% admin fee
-/// rule to each, shares policies, transfers both caps to sender (admin).
-public entry fun create_marketplace_policies(
-    publisher: &Publisher,
-    ctx: &mut TxContext,
-) {
-    let (mut policy_gear, cap_gear) = transfer_policy::new<EquipmentNFT>(publisher, ctx);
+public struct MARKETPLACE has drop {}
+
+/// Runs on package publish. Creates TransferPolicy<EquipmentNFT> and
+/// TransferPolicy<PetNFT> with 5% admin fee rule, shares policies, transfers caps to deployer.
+fun init(otw: MARKETPLACE,ctx: &mut TxContext) {
+    let publisher = sui::package::claim(otw, ctx);
+
+    let (mut policy_gear, cap_gear) = transfer_policy::new<EquipmentNFT>(&publisher, ctx);
     add_admin_rule_gear(&mut policy_gear, &cap_gear, ctx);
     transfer::public_share_object(policy_gear);
     transfer::public_transfer(cap_gear, ctx.sender());
 
-    let (mut policy_pet, cap_pet) = transfer_policy::new<PetNFT>(publisher, ctx);
+    let (mut policy_pet, cap_pet) = transfer_policy::new<PetNFT>(&publisher, ctx);
     add_admin_rule_pet(&mut policy_pet, &cap_pet, ctx);
     transfer::public_share_object(policy_pet);
     transfer::public_transfer(cap_pet, ctx.sender());
+
+    transfer::public_transfer(publisher, ctx.sender());
 }
 
 // ---------------------------------------------------------------------------

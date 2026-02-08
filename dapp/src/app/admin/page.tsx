@@ -125,7 +125,7 @@ export default function AdminPage() {
 
   if (!account) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 p-4">
+      <div className="mx-auto space-y-4 p-4">
         <h1 className="text-xl font-bold">Admin</h1>
         <p className="text-muted-foreground">
           Connect wallet to view marketplace analytics and withdraw fees.
@@ -136,7 +136,7 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 p-4">
+      <div className="mx-auto space-y-4 p-4">
         <h1 className="text-xl font-bold">Admin</h1>
         <p className="text-destructive" role="alert">
           Access denied. This page is for the admin wallet only.
@@ -149,7 +149,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 p-4">
+    <div className="mx-auto  space-y-6 p-4">
       <div>
         <h1 className="text-xl font-bold">Admin</h1>
         <p className="text-muted-foreground text-sm">
@@ -224,8 +224,7 @@ export default function AdminPage() {
       {!hasCaps && (
         <p className="text-muted-foreground text-sm">
           You do not hold TransferPolicyCap for this package. Withdraw is only
-          available to the wallet that received the caps from{" "}
-          <code className="rounded bg-muted px-1">create_marketplace_policies</code>.
+          available to the deployer wallet (caps are created automatically in init during package deploy).
         </p>
       )}
 

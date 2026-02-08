@@ -2,8 +2,9 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useCurrentAccount } from "@mysten/dapp-kit";
-import { useOwnedNFTs } from "@/data";
+import { useOwnedNFTs, useKioskActions } from "@/data";
 import { usePlayer } from "@/data";
+import { equipmentNFTType, PACKAGE_ID } from "@/config/contracts";
 import {
   SLOT_NAMES,
   type EquipmentNFTFields,
@@ -50,6 +51,7 @@ export default function InventoryPage() {
   const account = useCurrentAccount();
   const { player, refetch: refetchPlayer } = usePlayer();
   const { gear, isPending, refetch } = useOwnedNFTs();
+  const { listItem, isPending: isSelling } = useKioskActions();
   const [modal, setModal] = useState<GearModalState & { open: boolean }>({
     open: false,
     objectId: null,
@@ -113,10 +115,21 @@ export default function InventoryPage() {
     refetchPlayer();
   }, [closeModal, refetch, refetchPlayer]);
 
-  const handleSell = useCallback(() => {
-    // TODO: kiosk place + list
-    closeModal();
-  }, [closeModal]);
+  const handleSell = useCallback(
+    async (priceSui: string) => {
+      if (!modal.objectId) return;
+      const priceMist = BigInt(Math.round(Number(priceSui) * 1_000_000_000));
+      const itemType = equipmentNFTType(PACKAGE_ID);
+      try {
+        await listItem(modal.objectId, itemType, priceMist);
+        closeModal();
+        refetch();
+      } catch (e) {
+        console.error("List failed:", e);
+      }
+    },
+    [modal.objectId, listItem, closeModal, refetch]
+  );
 
   const handleTransfer = useCallback(() => {
     // TODO: transfer NFT to address
@@ -252,6 +265,7 @@ export default function InventoryPage() {
         onEquipOrUnequip={handleEquipOrUnequip}
         onSell={handleSell}
         onTransfer={handleTransfer}
+        isSelling={isSelling}
       />
     </div>
   );
