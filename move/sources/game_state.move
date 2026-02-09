@@ -6,6 +6,8 @@ use std::option::{none, Option};
 use sui::object::{ID, UID};
 use sui::transfer;
 use sui::tx_context::TxContext;
+use sui::random::{Self, Random};
+use sui_venture_project::nft_collection::{Self, NftMintAuthority};
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -374,4 +376,74 @@ public entry fun end_run_with_rewards_entry(
 ) {
     let player = end_run_with_rewards(run, player, final_blue_gems);
     transfer::transfer(player, ctx.sender());
+}
+
+// ---------------------------------------------------------------------------
+// End Run With Loot (burn Run, add gems, mint random gear based on floor)
+// ---------------------------------------------------------------------------
+
+/// Roll a rarity tier weighted by floor progress.
+/// Higher floor → higher chance of Epic/Legend/Mystic.
+fun roll_loot_rarity(g: &mut random::RandomGenerator, floor: u8): u8 {
+    let roll = random::generate_u8_in_range(g, 0, 99);
+    if (floor >= 15) {
+        // Floor 15: 20 Normal, 25 Rare, 25 Epic, 20 Legend, 10 Mystic
+        if (roll < 20) { 0 }
+        else if (roll < 45) { 1 }
+        else if (roll < 70) { 2 }
+        else if (roll < 90) { 3 }
+        else { 4 }
+    } else if (floor >= 10) {
+        // Floor 10-14: 25 Normal, 30 Rare, 25 Epic, 15 Legend, 5 Mystic
+        if (roll < 25) { 0 }
+        else if (roll < 55) { 1 }
+        else if (roll < 80) { 2 }
+        else if (roll < 95) { 3 }
+        else { 4 }
+    } else {
+        // Floor 5-9: 40 Normal, 30 Rare, 20 Epic, 8 Legend, 2 Mystic
+        if (roll < 40) { 0 }
+        else if (roll < 70) { 1 }
+        else if (roll < 90) { 2 }
+        else if (roll < 98) { 3 }
+        else { 4 }
+    }
+}
+
+/// End run: burn Run, add gems to Player, and mint random gear loot based on floor.
+/// Floor 1-4: 0 items, 5-9: 1, 10-14: 2, 15: 3.
+public entry fun end_run_with_loot_entry(
+    run: Run,
+    player: Player,
+    final_blue_gems: u64,
+    authority: &mut NftMintAuthority,
+    r: &Random,
+    ctx: &mut TxContext,
+) {
+    let floor = run.floor;
+    let player = end_run_with_rewards(run, player, final_blue_gems);
+    transfer::transfer(player, ctx.sender());
+
+    // Determine loot count based on floor
+    let loot_count: u8 = if (floor < 5) { 0 }
+        else if (floor < 10) { 1 }
+        else if (floor < 15) { 2 }
+        else { 3 };
+
+    if (loot_count > 0) {
+        let mut g = random::new_generator(r, ctx);
+        let mut i = 0u8;
+        while (i < loot_count) {
+            let slot = random::generate_u8_in_range(&mut g, 0, 3);
+            let set_id = random::generate_u8_in_range(&mut g, 0, 1);
+            let rarity = roll_loot_rarity(&mut g, floor);
+            let mul = ((rarity as u64) + 1);
+            let base = 5u64;
+            nft_collection::mint_gear(
+                authority, slot, set_id, rarity,
+                base * mul, base * mul, base * mul, base * mul, ctx,
+            );
+            i = i + 1;
+        };
+    };
 }

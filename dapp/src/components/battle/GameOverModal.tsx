@@ -2,8 +2,9 @@
 
 import { useRef, useEffect } from "react";
 import { gsap } from "gsap";
-import { Skull, Gem, Layers, Dices } from "lucide-react";
+import { Skull, Gem, Layers, Dices, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getLootCount, getLootPreview } from "./loot-preview";
 
 interface GameOverModalProps {
   open: boolean;
@@ -12,6 +13,7 @@ interface GameOverModalProps {
   gems: number;
   onEndRun: () => void;
   onEndRunWithRewards: () => void;
+  onEndRunWithLoot: () => void;
   isPending: boolean;
 }
 
@@ -22,6 +24,7 @@ export function GameOverModal({
   gems,
   onEndRun,
   onEndRunWithRewards,
+  onEndRunWithLoot,
   isPending,
 }: GameOverModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -59,6 +62,8 @@ export function GameOverModal({
 
   if (!open) return null;
 
+  const lootCount = getLootCount(floor);
+
   return (
     <div
       ref={overlayRef}
@@ -67,7 +72,7 @@ export function GameOverModal({
       aria-modal="true"
     >
       <div className="absolute inset-0 bg-black/70" />
-      <div className="relative z-10 w-full max-w-sm rounded-xl border border-red-500/30 bg-[#1D1C21] p-6 shadow-2xl">
+      <div className="relative z-10 w-[360px] rounded-xl border border-red-500/30 bg-[#1D1C21] p-6 shadow-2xl">
         <div className="flex flex-col items-center gap-4">
           <Skull ref={skullRef} className="size-16 text-red-500" />
           <h2 className="text-2xl font-bold text-red-400">Game Over</h2>
@@ -94,30 +99,48 @@ export function GameOverModal({
               </div>
               <span className="text-sm font-bold text-cyan-300">{gems}</span>
             </div>
+            <div className="flex items-center justify-between rounded-lg bg-[#252430] px-3 py-2">
+              <div className="flex items-center gap-2 text-gray-300">
+                <Package className="size-4" />
+                <span className="text-sm">Loot</span>
+              </div>
+              <span className="text-sm font-bold text-amber-300">{getLootPreview(floor)}</span>
+            </div>
           </div>
 
-          <div className="flex w-full gap-2 pt-2">
+          <div className="flex w-full flex-col gap-2 pt-2">
             <button
               type="button"
               onClick={onEndRun}
               disabled={isPending}
               className={cn(
-                "flex-1 rounded-lg border border-[#6D678F]/30 px-3 py-2.5 text-sm font-medium transition-colors",
-                "text-gray-300 hover:bg-[#6D678F]/20 disabled:opacity-50"
+                "w-full rounded-lg border border-[#6D678F]/30 px-3 py-2.5 text-sm font-medium transition-colors",
+                "text-gray-400 hover:bg-[#6D678F]/20 disabled:opacity-50"
               )}
             >
-              End Run
+              Abandon (no rewards)
             </button>
             <button
               type="button"
               onClick={onEndRunWithRewards}
               disabled={isPending || gems === 0}
               className={cn(
-                "flex-1 rounded-lg px-3 py-2.5 text-sm font-bold transition-colors",
+                "w-full rounded-lg px-3 py-2.5 text-sm font-bold transition-colors",
                 "bg-cyan-600 text-white hover:bg-cyan-500 disabled:opacity-50"
               )}
             >
               {isPending ? "..." : `Collect ${gems} Gems`}
+            </button>
+            <button
+              type="button"
+              onClick={onEndRunWithLoot}
+              disabled={isPending || lootCount === 0}
+              className={cn(
+                "w-full rounded-lg px-3 py-2.5 text-sm font-bold transition-colors",
+                "bg-amber-600 text-white hover:bg-amber-500 disabled:opacity-50"
+              )}
+            >
+              {isPending ? "..." : `Collect Gems + ${lootCount} Loot`}
             </button>
           </div>
         </div>

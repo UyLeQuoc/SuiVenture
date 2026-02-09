@@ -8,50 +8,18 @@ import { equipmentNFTType, PACKAGE_ID } from "@/config/contracts";
 import {
   SLOT_NAMES,
   type EquipmentNFTFields,
-  type PlayerFields,
 } from "@/config/contracts";
 import { GearCard } from "@/components/inventory/GearCard";
 import { GearModal, type GearModalState } from "@/components/inventory/GearModal";
+import { useEquippedGear } from "@/hooks/use-equipped-gear";
 import { cn } from "@/lib/utils";
-
-const SLOT_KEYS: (keyof PlayerFields)[] = [
-  "equipped_helmet",
-  "equipped_weapon",
-  "equipped_shield",
-  "equipped_boots",
-];
-
-function normalizeOptionId(val: unknown): string | null {
-  if (typeof val === "string" && val) return val;
-  if (val && typeof val === "object" && "vec" in val && Array.isArray((val as { vec: unknown[] }).vec)) {
-    const first = (val as { vec: string[] }).vec[0];
-    return typeof first === "string" && first ? first : null;
-  }
-  return null;
-}
-
-function getEquippedId(player: PlayerFields | undefined, slotIndex: number): string | null {
-  if (!player) return null;
-  const key = SLOT_KEYS[slotIndex];
-  if (!key) return null;
-  return normalizeOptionId(player[key]);
-}
-
-function isGearEquipped(
-  objectId: string,
-  player: PlayerFields | undefined
-): boolean {
-  if (!player) return false;
-  return SLOT_KEYS.some(
-    (key) => normalizeOptionId(player[key]) === objectId
-  );
-}
 
 export default function InventoryPage() {
   const account = useCurrentAccount();
   const { player, refetch: refetchPlayer } = usePlayer();
   const { gear, isPending, refetch } = useOwnedNFTs();
   const { listItem, isPending: isSelling } = useKioskActions();
+  const { equipped, equipGear, unequipGear } = useEquippedGear();
   const [modal, setModal] = useState<GearModalState & { open: boolean }>({
     open: false,
     objectId: null,
@@ -69,13 +37,15 @@ export default function InventoryPage() {
     return m;
   }, [gear]);
 
+  const equippedIds = useMemo(() => new Set(Object.values(equipped)), [equipped]);
+
   const equippedSlots = useMemo(() => {
     return [0, 1, 2, 3].map((slotIndex) => {
-      const id = getEquippedId(player, slotIndex);
+      const id = equipped[slotIndex] ?? null;
       const item = id ? gearByObjectId.get(id) ?? null : null;
       return { slotIndex, objectId: id, fields: item?.fields ?? null };
     });
-  }, [player, gearByObjectId]);
+  }, [equipped, gearByObjectId]);
 
   const openModalFromSlot = useCallback(
     (slotIndex: number) => {
@@ -97,11 +67,11 @@ export default function InventoryPage() {
         open: true,
         objectId,
         fields,
-        slotIndex: null,
-        isEquipped: isGearEquipped(objectId, player),
+        slotIndex: fields.slot,
+        isEquipped: equippedIds.has(objectId),
       });
     },
-    [player]
+    [equippedIds]
   );
 
   const closeModal = useCallback(() => {
@@ -109,11 +79,16 @@ export default function InventoryPage() {
   }, []);
 
   const handleEquipOrUnequip = useCallback(() => {
-    // TODO: wire to game_state::equip_* / unequip when available
+    const { objectId, fields, isEquipped } = modal;
+    if (isEquipped && objectId) {
+      // Find which slot has this objectId and unequip it
+      const slot = Object.entries(equipped).find(([, id]) => id === objectId);
+      if (slot) unequipGear(Number(slot[0]));
+    } else if (objectId && fields) {
+      equipGear(fields.slot, objectId);
+    }
     closeModal();
-    refetch();
-    refetchPlayer();
-  }, [closeModal, refetch, refetchPlayer]);
+  }, [modal, equipped, equipGear, unequipGear, closeModal]);
 
   const handleSell = useCallback(
     async (priceSui: string) => {
@@ -214,7 +189,7 @@ export default function InventoryPage() {
           <ul className="grid gap-3 grid-cols-4">
             {gear.map((item) => {
               const f = item.fields as EquipmentNFTFields;
-              const equipped = isGearEquipped(item.objectId, player);
+              const isEquipped = equippedIds.has(item.objectId);
               return (
                 <li key={item.objectId} className="flex justify-center">
                   <button
@@ -237,7 +212,7 @@ export default function InventoryPage() {
                       }}
                       showMeta={false}
                     />
-                    {equipped && (
+                    {isEquipped && (
                       <span
                         className="absolute top-1 left-1 rounded bg-[#6D678F]/90 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm"
                         aria-hidden

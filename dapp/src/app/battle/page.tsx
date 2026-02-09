@@ -9,6 +9,7 @@ import { useRun } from "@/data";
 import {
   PACKAGE_ID,
   RANDOM_ID,
+  NFT_MINT_AUTHORITY_ID,
   MODULE_GAME_STATE,
   MODULE_RUN_LOGIC,
   type RunFields,
@@ -22,10 +23,13 @@ import { DiceRoller } from "@/components/battle/DiceRoller";
 import { EventFeedback } from "@/components/battle/EventFeedback";
 import { GameOverModal } from "@/components/battle/GameOverModal";
 import { BattleAnimationModal } from "@/components/battle/BattleAnimationModal";
+import { QuitConfirmModal } from "@/components/battle/QuitConfirmModal";
+import { EquipPanel } from "@/components/battle/EquipPanel";
+import { useEquippedGear } from "@/hooks/use-equipped-gear";
 import { detectEvent, type DetectedEvent } from "@/hooks/use-event-detection";
 import { cn } from "@/lib/utils";
 import { gsap } from "gsap";
-import { UserPlus, Play, Store, Swords } from "lucide-react";
+import { UserPlus, Play, Store, Swords, LogOut } from "lucide-react";
 
 const CONFIGURED = PACKAGE_ID !== "0x0";
 
@@ -36,12 +40,16 @@ export default function BattlePage() {
   const { run, runObjectId, refetch: refetchRun } = useRun();
   const { mutate: signAndExecute, isPending } = useSignAndExecuteTransaction();
   const [shopOpen, setShopOpen] = useState(false);
+  const [quitOpen, setQuitOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detectedEvent, setDetectedEvent] = useState<DetectedEvent>(null);
   const [battleEvent, setBattleEvent] = useState<Extract<DetectedEvent, { type: "combat" }> | null>(null);
   const [tileEvents, setTileEvents] = useState<TileEventMap>({});
   const prevRunRef = useRef<RunFields | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Equip gear (UI mock - localStorage)
+  const { equipped, equipGear, unequipGear } = useEquippedGear();
 
   // Snapshot run state before a roll
   const snapshotRun = useCallback(() => {
@@ -174,6 +182,7 @@ export default function BattlePage() {
       arguments: [tx.object(runObjectId)],
     });
     runTx(tx);
+    setQuitOpen(false);
   };
 
   const handleEndRunWithRewards = () => {
@@ -188,6 +197,24 @@ export default function BattlePage() {
       ],
     });
     runTx(tx);
+    setQuitOpen(false);
+  };
+
+  const handleEndRunWithLoot = () => {
+    if (!runObjectId || !playerObjectId || !run) return;
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${PACKAGE_ID}::${MODULE_GAME_STATE}::end_run_with_loot_entry`,
+      arguments: [
+        tx.object(runObjectId),
+        tx.object(playerObjectId),
+        tx.pure.u64(Number(run.blue_gems)),
+        tx.object(NFT_MINT_AUTHORITY_ID),
+        tx.object(RANDOM_ID),
+      ],
+    });
+    runTx(tx);
+    setQuitOpen(false);
   };
 
   const dismissEvent = useCallback(() => setDetectedEvent(null), []);
@@ -261,6 +288,16 @@ export default function BattlePage() {
           <p className="text-base font-bold text-white">Dungeon Awaits</p>
           <p className="text-xs text-gray-400">Roll dice, fight monsters, collect gems</p>
         </div>
+
+        {/* Equip panel (UI mock) before starting run */}
+        <div className="w-full">
+          <EquipPanel
+            equipped={equipped}
+            onEquip={equipGear}
+            onUnequip={unequipGear}
+          />
+        </div>
+
         <button
           type="button"
           onClick={handleStartRun}
@@ -302,7 +339,7 @@ export default function BattlePage() {
         tileEvents={tileEvents}
       />
 
-      {/* Actions: Dice + Potion + Shop in one compact row */}
+      {/* Actions: Dice + Potion + Shop + Quit in one compact row */}
       <div className="rounded-lg border border-[#6D678F]/30 bg-[#252430]/60 p-3 space-y-3">
         {/* Dice roller row */}
         <div className="flex items-center gap-2">
@@ -328,6 +365,19 @@ export default function BattlePage() {
               Shop
             </button>
           )}
+          {/* Quit button */}
+          <button
+            type="button"
+            onClick={() => setQuitOpen(true)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-3 text-sm font-medium transition-all",
+              "border-red-500/30 bg-red-500/10 text-red-400",
+              "hover:bg-red-500/20 hover:border-red-500/50"
+            )}
+          >
+            <LogOut className="size-4" />
+            Quit
+          </button>
         </div>
 
         {/* Potion bar inline */}
@@ -371,6 +421,18 @@ export default function BattlePage() {
         />
       )}
 
+      {/* Quit Confirm Modal */}
+      <QuitConfirmModal
+        open={quitOpen}
+        floor={run.floor}
+        gems={Number(run.blue_gems)}
+        onAbandon={handleEndRun}
+        onCollectGems={handleEndRunWithRewards}
+        onCollectWithLoot={handleEndRunWithLoot}
+        onCancel={() => setQuitOpen(false)}
+        isPending={isPending}
+      />
+
       {/* Game Over Modal */}
       <GameOverModal
         open={!!gameOver}
@@ -379,6 +441,7 @@ export default function BattlePage() {
         gems={Number(run.blue_gems)}
         onEndRun={handleEndRun}
         onEndRunWithRewards={handleEndRunWithRewards}
+        onEndRunWithLoot={handleEndRunWithLoot}
         isPending={isPending}
       />
     </div>

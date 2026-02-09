@@ -3,35 +3,17 @@
 import { useCallback, useMemo, useState } from "react";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useOwnedNFTs, useKioskActions } from "@/data";
-import { usePlayer } from "@/data";
-import { PET_CATALOG, PACKAGE_ID, type PetNFTFields, type PlayerFields, petNFTType } from "@/config/contracts";
+import { PET_CATALOG, PACKAGE_ID, type PetNFTFields, petNFTType } from "@/config/contracts";
 import { PetCard } from "@/components/inventory/PetCard";
 import { PetModal, type PetModalState } from "@/components/inventory/PetModal";
+import { useEquippedPet } from "@/hooks/use-equipped-pet";
 import { cn } from "@/lib/utils";
-
-function normalizeOptionId(val: unknown): string | null {
-  if (typeof val === "string" && val) return val;
-  if (
-    val &&
-    typeof val === "object" &&
-    "vec" in val &&
-    Array.isArray((val as { vec: unknown[] }).vec)
-  ) {
-    const first = (val as { vec: string[] }).vec[0];
-    return typeof first === "string" && first ? first : null;
-  }
-  return null;
-}
-
-function getEquippedPetId(player: PlayerFields | undefined): string | null {
-  return player ? normalizeOptionId(player.equipped_pet) : null;
-}
 
 export default function PetPage() {
   const account = useCurrentAccount();
-  const { player, refetch: refetchPlayer } = usePlayer();
   const { pets, isPending, refetch } = useOwnedNFTs();
   const { listItem, isPending: isSelling } = useKioskActions();
+  const { equippedPetId, equipPet, unequipPet } = useEquippedPet();
   const [modal, setModal] = useState<PetModalState & { open: boolean }>({
     open: false,
     objectId: null,
@@ -39,7 +21,6 @@ export default function PetPage() {
     isEquipped: false,
   });
 
-  const equippedPetId = useMemo(() => getEquippedPetId(player), [player]);
   const equippedPet = useMemo(() => {
     if (!equippedPetId || !pets.length) return null;
     return pets.find((p) => p.objectId === equippedPetId) ?? null;
@@ -71,11 +52,14 @@ export default function PetPage() {
   }, []);
 
   const handleEquipOrUnequip = useCallback(() => {
-    // TODO: wire to game_state::equip_pet / unequip_pet when available
+    const { objectId, isEquipped } = modal;
+    if (isEquipped) {
+      unequipPet();
+    } else if (objectId) {
+      equipPet(objectId);
+    }
     closeModal();
-    refetch();
-    refetchPlayer();
-  }, [closeModal, refetch, refetchPlayer]);
+  }, [modal, equipPet, unequipPet, closeModal]);
 
   const handleSell = useCallback(
     async (priceSui: string) => {
