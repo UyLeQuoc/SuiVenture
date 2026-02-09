@@ -210,3 +210,14 @@
     transform: scale(1.15);
   }
 }
+
+/* Battle board: pulsing glow on current tile */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 4px 1px rgba(109, 103, 143, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px 4px rgba(109, 103, 143, 0.8);
+  }
+}
